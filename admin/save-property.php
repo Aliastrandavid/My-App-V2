@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once 'includes/functions.php';
 
 // Check if user is logged in

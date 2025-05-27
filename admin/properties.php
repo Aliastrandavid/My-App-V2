@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once 'includes/functions.php';
 
 //Add  check logged in from dashboard
