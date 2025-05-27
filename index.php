@@ -20,8 +20,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-echo 1;exit;
-
 // Get the request URI and parse it
 $request_uri = $_SERVER['REQUEST_URI'];
 
