@@ -1,6 +1,12 @@
 <?php
 require_once 'includes/functions.php';
 
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: simple_login.php');
+    exit;
+}
+
 // Initialize variables
 $error = null;
 $success = false;
