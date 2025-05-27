@@ -1,6 +1,13 @@
 <?php
 require_once 'includes/functions.php';
 
+//Add  check logged in from dashboard
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header('Location: simple_login.php');
+    exit;
+}
+
 $error = null;
 $properties = [];
 $filteredCount = 0;
