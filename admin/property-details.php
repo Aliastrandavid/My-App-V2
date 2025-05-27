@@ -266,7 +266,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
                                                 <?php if (isset($comment['comment']) && !empty($comment['comment'])) : ?>
                                                     <div class="comment-date text-muted small mt-2">
-                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        <!-- <i class="fas fa-calendar-alt me-1"></i> -->
                                                         <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
                                                         <?php// echo date('F j, Y', strtotime($comment['comment'])); ?>
                                                     </div>
