@@ -258,16 +258,17 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
                                                     <h5 class="comment-title"><?php echo htmlspecialchars($comment['title']); ?></h5>
                                                 <?php endif; ?>
 
-                                                <?php if (isset($comment['text']) && !empty($comment['subtitle'])) : ?>
+                                                <?php if (isset($comment['subtitle']) && !empty($comment['subtitle'])) : ?>
                                                     <div class="comment-text">
                                                         <?php echo nl2br(htmlspecialchars($comment['subtitle'])); ?>
                                                     </div>
                                                 <?php endif; ?>
 
-                                                <?php if (isset($comment['date']) && !empty($comment['comment'])) : ?>
+                                                <?php if (isset($comment['comment']) && !empty($comment['comment'])) : ?>
                                                     <div class="comment-date text-muted small mt-2">
                                                         <i class="fas fa-calendar-alt me-1"></i>
-                                                        <?php echo date('F j, Y', strtotime($comment['comment'])); ?>
+                                                        <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
+                                                        <?php// echo date('F j, Y', strtotime($comment['comment'])); ?>
                                                     </div>
                                                 <?php endif; ?>
 
