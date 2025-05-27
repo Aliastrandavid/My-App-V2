@@ -763,5 +763,175 @@ include 'includes/header.php';
         document.querySelectorAll('.media-item').forEach(function(item) {
             item.addEventListener('click', function() {
                 if (mediaSelectionMode === 'single') {
-                    // Single selection mode - remove all other selections
-                    document
+                    // Single selection mode - remove all other selection - ligne ci-dessous avaient disparues
+                    document.querySelectorAll('.media-item .card').forEach(function(card) {
+                        card.classList.remove('border-primary');
+                    });
+                    this.querySelector('.card').classList.add('border-primary');
+                } else {
+                    // Multiple selection mode - toggle selection
+                    this.querySelector('.card').classList.toggle('border-primary');
+                }
+            });
+        });
+        
+        // Handle media selection
+        document.getElementById('select-media-button').addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('mediaGalleryModal'));
+            
+            if (mediaSelectionMode === 'single') {
+                // Single selection mode - for featured image
+                const selectedItem = document.querySelector('.media-item .card.border-primary');
+                if (selectedItem) {
+                    const mediaId = selectedItem.closest('.media-item').dataset.id;
+                    const mediaPreview = selectedItem.querySelector('.media-item-preview').innerHTML;
+                    const mediaName = selectedItem.querySelector('.card-text').textContent;
+                    
+                    document.getElementById('featured_image').value = mediaId;
+                    document.getElementById('featured-image-preview').innerHTML = mediaPreview;
+                    document.getElementById('select-featured-image').textContent = 'Change Featured Image';
+                    
+                    // Show remove button
+                    const removeBtn = document.getElementById('remove-featured-image');
+                    if (removeBtn) {
+                        removeBtn.style.display = 'block';
+                    } else {
+                        // Create remove button if it doesn't exist
+                        const featuredImageControl = document.getElementById('select-featured-image').parentElement;
+                        const newRemoveBtn = document.createElement('button');
+                        newRemoveBtn.type = 'button';
+                        newRemoveBtn.id = 'remove-featured-image';
+                        newRemoveBtn.className = 'btn btn-outline-danger';
+                        newRemoveBtn.textContent = 'Remove Featured Image';
+                        newRemoveBtn.addEventListener('click', function() {
+                            document.getElementById('featured_image').value = '';
+                            document.getElementById('featured-image-preview').innerHTML = `
+                                <div class="p-4 bg-light text-center">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <p>No featured image selected</p>
+                                </div>
+                            `;
+                            document.getElementById('select-featured-image').textContent = 'Set Featured Image';
+                            this.style.display = 'none';
+                        });
+                        featuredImageControl.appendChild(newRemoveBtn);
+                    }
+                }
+            } else {
+                // Multiple selection mode - for gallery
+                const selectedItems = document.querySelectorAll('.media-item .card.border-primary');
+                if (selectedItems.length > 0) {
+                    const galleryContainer = document.querySelector(`#gallery-${activeGalleryField} .gallery-items`);
+                    const currentItems = JSON.parse(document.getElementById(`${activeGalleryField}-input`).value || '[]');
+                    
+                    selectedItems.forEach(function(item) {
+                        const mediaId = item.closest('.media-item').dataset.id;
+                        
+                        // Only add if not already in gallery
+                        if (!currentItems.includes(mediaId)) {
+                            currentItems.push(mediaId);
+                            
+                            // Create gallery item UI
+                            const mediaPreview = item.querySelector('.media-item-preview').innerHTML;
+                            const mediaName = item.querySelector('.card-text').textContent;
+                            
+                            const galleryItem = document.createElement('div');
+                            galleryItem.className = 'col-md-3 mb-3 gallery-item';
+                            galleryItem.dataset.id = mediaId;
+                            galleryItem.innerHTML = `
+                                <div class="card">
+                                    <div class="card-img-top gallery-item-preview" style="height: 150px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                        ${mediaPreview}
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <p class="card-text small text-truncate">${mediaName}</p>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-gallery-item">Remove</button>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            galleryContainer.appendChild(galleryItem);
+                            
+                            // Add event listener to remove button
+                            galleryItem.querySelector('.remove-gallery-item').addEventListener('click', function() {
+                                const itemId = this.closest('.gallery-item').dataset.id;
+                                const itemIndex = currentItems.indexOf(itemId);
+                                if (itemIndex > -1) {
+                                    currentItems.splice(itemIndex, 1);
+                                    document.getElementById(`${activeGalleryField}-input`).value = JSON.stringify(currentItems);
+                                }
+                                this.closest('.gallery-item').remove();
+                            });
+                        }
+                    });
+                    
+                    // Update gallery input value
+                    document.getElementById(`${activeGalleryField}-input`).value = JSON.stringify(currentItems);
+                }
+            }
+            
+            modal.hide();
+        });
+        
+        // Gallery add button
+        document.querySelectorAll('.add-gallery-item').forEach(function(button) {
+            button.addEventListener('click', function() {
+                activeGalleryField = this.dataset.field;
+                mediaSelectionMode = 'multiple';
+                
+                // Reset selections in modal
+                document.querySelectorAll('.media-item .card').forEach(function(card) {
+                    card.classList.remove('border-primary');
+                });
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('mediaGalleryModal'));
+                modal.show();
+            });
+        });
+        
+        // Gallery remove buttons
+        document.querySelectorAll('.remove-gallery-item').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const galleryItem = this.closest('.gallery-item');
+                const fieldName = galleryItem.closest('.gallery-field').id.replace('gallery-', '');
+                const itemId = galleryItem.dataset.id;
+                
+                // Update hidden input
+                const currentItems = JSON.parse(document.getElementById(`${fieldName}-input`).value || '[]');
+                const itemIndex = currentItems.indexOf(itemId);
+                if (itemIndex > -1) {
+                    currentItems.splice(itemIndex, 1);
+                    document.getElementById(`${fieldName}-input`).value = JSON.stringify(currentItems);
+                }
+                
+                // Remove from UI
+                galleryItem.remove();
+            });
+        });
+        
+        // Autogenerate slug from title
+        const defaultLangTitle = document.getElementById('title_<?php echo DEFAULT_LANGUAGE; ?>');
+        const slugField = document.getElementById('slug');
+        
+        if (defaultLangTitle && slugField) {
+            defaultLangTitle.addEventListener('blur', function() {
+                if (slugField.value === '') {
+                    // Simple slug generation - in production, you'd want a more robust solution
+                    const slug = this.value.toLowerCase()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+                    
+                    slugField.value = slug;
+                }
+            });
+        }
+    });
+</script>
+
+<?php
+// Include footer
+include 'includes/footer.php';
+?>
