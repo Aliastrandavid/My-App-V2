@@ -1,46 +1,338 @@
 [
     {
-        "id": "681beeab538375921d3cf",
-        "name": "IMG_3500",
-        "filename": "681beeab53196.jpeg",
-        "url": "/uploads/681beeab53196.jpeg",
-        "alt": "test",
-        "description": "desc test",
-        "type": "jpeg",
-        "size": 1723548,
-        "date": "2025-05-07 23:37:15"
-    },
-    {
-        "id": "681c002cbc617xyz123",
-        "name": "Sample PNG Image",
-        "filename": "681c002cbc617.png",
-        "url": "/uploads/681c002cbc617.png",
-        "alt": "Sample PNG",
-        "description": "A sample PNG image",
-        "type": "png",
-        "size": 245876,
-        "date": "2025-05-08 00:10:25"
-    },
-    {
-        "id": "681c0129284a4abc456",
-        "name": "Sample WebP Image",
-        "filename": "681c0129284a4.webp",
-        "url": "/uploads/681c0129284a4.webp",
-        "alt": "Sample WebP", 
-        "description": "A sample WebP image",
+        "id": "6839c553a7696",
+        "name": "Snack-rouge",
+        "filename": "Snack-rouge.webp",
+        "url": "/uploads/Snack-rouge.webp",
+        "alt": {
+            "en": "working-with-multilingual-content",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "working-with-multilingual-content",
+            "fr": "",
+            "es": ""
+        },
         "type": "webp",
-        "size": 189652,
-        "date": "2025-05-08 00:15:37"
+        "size": 84570,
+        "date": "2025-05-30 14:48:40"
     },
     {
-        "id": "681c023aec45adef789",
-        "name": "Sample JPG Image",
-        "filename": "681c023aec45a.jpg",
-        "url": "/uploads/681c023aec45a.jpg",
-        "alt": "Sample JPG",
-        "description": "A sample JPG image", 
+        "id": "6839c553a792a",
+        "name": "Snack-rouge_01",
+        "filename": "Snack-rouge_01.webp",
+        "url": "/uploads/Snack-rouge_01.webp",
+        "alt": {
+            "en": "working-with-multilingual-content",
+            "fr": "working-with-multilingual-content",
+            "es": "working-with-multilingual-content"
+        },
+        "description": {
+            "en": "working-with-multilingual-content",
+            "fr": "working-with-multilingual-content",
+            "es": "working-with-multilingual-content"
+        },
+        "type": "webp",
+        "size": 84570,
+        "date": "2025-05-30 14:48:46"
+    },
+    {
+        "id": "6839c57d33e0f",
+        "name": "Yogurt",
+        "filename": "Yogurt.webp",
+        "url": "/uploads/Yogurt.webp",
+        "alt": "",
+        "description": "",
+        "type": "webp",
+        "size": 54164,
+        "date": "2025-05-30 14:49:25"
+    },
+    {
+        "id": "6839c6e20ae5d",
+        "name": "Snack-rouge",
+        "filename": "Snack-rouge.jpg",
+        "url": "/uploads/Snack-rouge.jpg",
+        "alt": {
+            "en": "yaourt_en",
+            "fr": "yaourt_fr",
+            "es": "yaourt_es"
+        },
+        "description": {
+            "en": "Impossible de charger l'image originale.",
+            "fr": "Impossible de charger l'image originale.",
+            "es": "Impossible de charger l'image originale."
+        },
         "type": "jpg",
-        "size": 354215,
-        "date": "2025-05-08 00:20:12"
+        "size": 253127,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e276bfd",
+        "name": "Snack-bleu",
+        "filename": "Snack-bleu.jpg",
+        "url": "/uploads/Snack-bleu.jpg",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "jpg",
+        "size": 109107,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e2c4cf2",
+        "name": "Snack-vert",
+        "filename": "Snack-vert.jpg",
+        "url": "/uploads/Snack-vert.jpg",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "jpg",
+        "size": 484520,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e2f3f27",
+        "name": "Snack",
+        "filename": "Snack.jpg",
+        "url": "/uploads/Snack.jpg",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "jpg",
+        "size": 220641,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e393b8a",
+        "name": "poster",
+        "filename": "poster.webp",
+        "url": "/uploads/poster.webp",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "webp",
+        "size": 245568,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c6e3d4d76",
+        "name": "Yogurt",
+        "filename": "Yogurt.jpg",
+        "url": "/uploads/Yogurt.jpg",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "jpg",
+        "size": 148310,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c6e3de60b",
+        "name": "Snack-bleu_d",
+        "filename": "Snack-bleu_d.jpg",
+        "url": "/uploads/Snack-bleu_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 101197,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3de728",
+        "name": "Snack-bleu_m",
+        "filename": "Snack-bleu_m.jpg",
+        "url": "/uploads/Snack-bleu_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 24404,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3de998",
+        "name": "Snack-rouge_d",
+        "filename": "Snack-rouge_d.jpg",
+        "url": "/uploads/Snack-rouge_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 91385,
+        "date": "2025-05-30 14:55:29"
+    },
+    {
+        "id": "6839c6e3dea1b",
+        "name": "Snack-rouge_m",
+        "filename": "Snack-rouge_m.jpg",
+        "url": "/uploads/Snack-rouge_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 22734,
+        "date": "2025-05-30 14:55:29"
+    },
+    {
+        "id": "6839c6e3debb3",
+        "name": "Snack-vert_d",
+        "filename": "Snack-vert_d.jpg",
+        "url": "/uploads/Snack-vert_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 129670,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3decb2",
+        "name": "Snack-vert_m",
+        "filename": "Snack-vert_m.jpg",
+        "url": "/uploads/Snack-vert_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 33788,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3dee4e",
+        "name": "Snack_d",
+        "filename": "Snack_d.jpg",
+        "url": "/uploads/Snack_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 102079,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3deed2",
+        "name": "Snack_m",
+        "filename": "Snack_m.jpg",
+        "url": "/uploads/Snack_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 25147,
+        "date": "2025-05-30 14:55:30"
+    },
+    {
+        "id": "6839c6e3df122",
+        "name": "Yogurt_d",
+        "filename": "Yogurt_d.jpg",
+        "url": "/uploads/Yogurt_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 59807,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c6e3df1a7",
+        "name": "Yogurt_m",
+        "filename": "Yogurt_m.jpg",
+        "url": "/uploads/Yogurt_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 14035,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c6e3df2ae",
+        "name": "poster_d",
+        "filename": "poster_d.webp",
+        "url": "/uploads/poster_d.webp",
+        "alt": "",
+        "description": "",
+        "type": "webp",
+        "size": 148162,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c6e3df302",
+        "name": "poster_m",
+        "filename": "poster_m.webp",
+        "url": "/uploads/poster_m.webp",
+        "alt": "",
+        "description": "",
+        "type": "webp",
+        "size": 18236,
+        "date": "2025-05-30 14:55:31"
+    },
+    {
+        "id": "6839c77b35bab",
+        "name": "Yogurt_new.jpg",
+        "filename": "Yogurt_new.jpg.jpg",
+        "url": "/uploads/Yogurt_new.jpg.jpg",
+        "alt": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "description": {
+            "en": "",
+            "fr": "",
+            "es": ""
+        },
+        "type": "jpg",
+        "size": 148310,
+        "date": "2025-05-30 14:58:03"
+    },
+    {
+        "id": "6839c77b40223",
+        "name": "Yogurt_new.jpg_d",
+        "filename": "Yogurt_new.jpg_d.jpg",
+        "url": "/uploads/Yogurt_new.jpg_d.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 59807,
+        "date": "2025-05-30 14:58:03"
+    },
+    {
+        "id": "6839c77b40342",
+        "name": "Yogurt_new.jpg_m",
+        "filename": "Yogurt_new.jpg_m.jpg",
+        "url": "/uploads/Yogurt_new.jpg_m.jpg",
+        "alt": "",
+        "description": "",
+        "type": "jpg",
+        "size": 14035,
+        "date": "2025-05-30 14:58:02"
     }
 ]

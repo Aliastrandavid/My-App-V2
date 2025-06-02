@@ -511,3 +511,82 @@ function get_general_settings() {
     $settings = read_json_file($settings_file);
     return is_array($settings) ? $settings : [];
 }
+
+/**
+ * Redimensionne une image et la sauvegarde à la destination donnée
+ * @param string $src Chemin source
+ * @param string $dest Chemin de destination
+ * @param int $new_width Largeur cible
+ * @return bool
+ */
+function resize_image($src, $dest, $new_width, $force_ext = null) {
+    $info = getimagesize($src);
+    if (!$info) return false;
+    list($width, $height) = $info;
+    $mime = $info['mime'];
+    switch ($mime) {
+        case 'image/jpeg': $src_img = imagecreatefromjpeg($src); break;
+        case 'image/png': $src_img = imagecreatefrompng($src); break;
+        case 'image/gif': $src_img = imagecreatefromgif($src); break;
+        case 'image/webp': $src_img = imagecreatefromwebp($src); break;
+        default: return false;
+    }
+    $ratio = $width / $height;
+    $new_height = intval($new_width / $ratio);
+    $dst_img = imagecreatetruecolor($new_width, $new_height);
+    if ($mime === 'image/png' || $mime === 'image/gif') {
+        imagecolortransparent($dst_img, imagecolorallocatealpha($dst_img, 0, 0, 0, 127));
+        imagealphablending($dst_img, false);
+        imagesavealpha($dst_img, true);
+    }
+    imagecopyresampled($dst_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+    $ext = $force_ext ?: strtolower(pathinfo($dest, PATHINFO_EXTENSION));
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg': imagejpeg($dst_img, $dest, 90); break;
+        case 'png': imagepng($dst_img, $dest, 6); break;
+        case 'webp': imagewebp($dst_img, $dest, 90); break;
+        case 'gif': imagegif($dst_img, $dest); break;
+        default: imagedestroy($src_img); imagedestroy($dst_img); return false;
+    }
+    imagedestroy($src_img);
+    imagedestroy($dst_img);
+    return true;
+}
+
+/**
+ * Convert image to desired format
+ *
+ * @param string $src Source file path
+ * @param string $dest Destination file path
+ * @param string $format Desired format (jpg, png, webp)
+ * @return bool
+ */
+function convert_image_format($src, $dest, $format) {
+    $info = getimagesize($src);
+    if (!$info) return false;
+    $mime = $info['mime'];
+    switch ($mime) {
+        case 'image/jpeg': $img = imagecreatefromjpeg($src); break;
+        case 'image/png': $img = imagecreatefrompng($src); break;
+        case 'image/gif': $img = imagecreatefromgif($src); break;
+        case 'image/webp': $img = imagecreatefromwebp($src); break;
+        default: return false;
+    }
+    switch ($format) {
+        case 'jpg':
+        case 'jpeg': imagejpeg($img, $dest, 90); break;
+        case 'png': imagepng($img, $dest, 6); break;
+        case 'webp': imagewebp($img, $dest, 90); break;
+        default: return false;
+    }
+    imagedestroy($img);
+    return true;
+}
+
+// Correction de la génération des suffixes (_t, _m, _d) pour éviter les doublons (_t_t, _m_m, etc.)
+function get_versioned_filename($filename, $suffix) {
+    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    $base = preg_replace('/(_[tmd])?\.' . preg_quote($ext, '/') . '$/i', '', $filename);
+    return $base . '_' . $suffix . '.' . $ext;
+}

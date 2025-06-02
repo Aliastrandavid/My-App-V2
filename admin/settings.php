@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $admin_email = $_POST['admin_email'] ?? '';
     $default_language = $_POST['default_language'] ?? 'en';
     $timezone = $_POST['timezone'] ?? 'UTC';
-    
+
     // Update settings
     $settings['site_title'] = $site_title;
     $settings['site_description'] = $site_description;
@@ -46,12 +46,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings['admin_email'] = $admin_email;
     $settings['default_language'] = $default_language;
     $settings['timezone'] = $timezone;
-    
+
     // Save settings
     if (write_json_file($settings_file, $settings)) {
         $success_message = 'Settings saved successfully.';
     } else {
         $error_message = 'Failed to save settings. Check file permissions.';
+    }
+
+    // Traitement du formulaire de langues
+    if (isset($_POST['update_languages'])) {
+        $languages_file = '../storage/lang_config.json';
+        $lang_config = file_exists($languages_file) ? read_json_file($languages_file) : [];
+        // Met à jour la langue par défaut
+        $lang_config['default'] = $_POST['default_language'] ?? 'en';
+        // Met à jour les langues actives
+        $lang_config['active_languages'] = isset($_POST['active_languages']) ? array_values(array_unique($_POST['active_languages'])) : [];
+        // S'assure que la langue par défaut est active
+        if (!in_array($lang_config['default'], $lang_config['active_languages'])) {
+            $lang_config['active_languages'][] = $lang_config['default'];
+        }
+        // S'assure que la liste des langues contient toutes les actives
+        if (isset($lang_config['languages']) && is_array($lang_config['languages'])) {
+            $lang_config['languages'] = array_unique(array_merge($lang_config['languages'], $lang_config['active_languages']));
+        } else {
+            $lang_config['languages'] = $lang_config['active_languages'];
+        }
+        if (write_json_file($languages_file, $lang_config)) {
+            $success_message = 'Language settings updated.';
+        } else {
+            $error_message = 'Failed to update language settings.';
+        }
+    }
+    // Ajout d'une nouvelle langue
+    if (isset($_POST['add_language']) && !empty($_POST['language_code']) && !empty($_POST['language_name'])) {
+        $languages_file = '../storage/lang_config.json';
+        $lang_config = file_exists($languages_file) ? read_json_file($languages_file) : [];
+        $code = strtolower(trim($_POST['language_code']));
+        $name = trim($_POST['language_name']);
+        if (!in_array($code, $lang_config['languages'])) {
+            $lang_config['languages'][] = $code;
+        }
+        if (!in_array($code, $lang_config['active_languages'])) {
+            $lang_config['active_languages'][] = $code;
+        }
+        // Si la langue n'a pas de nom, on ne fait rien (sécurité)
+        if (write_json_file($languages_file, $lang_config)) {
+            $success_message = 'Language added.';
+        } else {
+            $error_message = 'Failed to add language.';
+        }
     }
 }
 
@@ -189,56 +233,36 @@ $timezones = DateTimeZone::listIdentifiers();
                     <div class="card-body">
                         <h5 class="card-title">Language Settings</h5>
                         <p class="card-text">Configure available languages for your content.</p>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Language Code</th>
-                                        <th>Language Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>en</td>
-                                        <td>English</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary" disabled>Default</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>fr</td>
-                                        <td>French</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-danger">Disable</button>
-                                        </td>
-                                    </tr>
-                                    <?php foreach ($languages as $code => $language): ?>
-                                        <?php if ($code !== 'en' && $code !== 'fr'): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($code); ?></td>
-                                                <td><?php echo htmlspecialchars($language['name']); ?></td>
-                                                <td>
-                                                    <span class="badge <?php echo $language['active'] ? 'bg-success' : 'bg-secondary'; ?>">
-                                                        <?php echo $language['active'] ? 'Active' : 'Inactive'; ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-<?php echo $language['active'] ? 'danger' : 'success'; ?>">
-                                                        <?php echo $language['active'] ? 'Disable' : 'Enable'; ?>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        
+                        <form method="post" action="settings.php">
+                            <input type="hidden" name="update_languages" value="1">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Default</th>
+                                            <th>Active</th>
+                                            <th>Language Code</th>
+                                            <th>Language Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($languages as $code => $language): ?>
+                                        <tr>
+                                            <td class="text-center">
+                                                <input type="radio" name="default_language" value="<?php echo htmlspecialchars($code); ?>" <?php echo ($lang_config['default'] ?? 'en') === $code ? 'checked' : ''; ?> />
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="checkbox" name="active_languages[]" value="<?php echo htmlspecialchars($code); ?>" <?php echo in_array($code, $lang_config['active_languages'] ?? []) ? 'checked' : ''; ?> />
+                                            </td>
+                                            <td><?php echo htmlspecialchars($code); ?></td>
+                                            <td><?php echo htmlspecialchars($language['name']); ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Save Language Settings</button>
+                        </form>
                         <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addLanguageModal">
                             <i class="bi bi-plus-lg"></i> Add Language
                         </button>
@@ -257,7 +281,8 @@ $timezones = DateTimeZone::listIdentifiers();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addLanguageForm">
+                    <form id="addLanguageForm" method="post" action="settings.php">
+                        <input type="hidden" name="add_language" value="1">
                         <div class="mb-3">
                             <label for="language_code" class="form-label">Language Code</label>
                             <input type="text" class="form-control" id="language_code" name="language_code" 
@@ -269,11 +294,11 @@ $timezones = DateTimeZone::listIdentifiers();
                             <input type="text" class="form-control" id="language_name" name="language_name" 
                                    placeholder="e.g., Spanish, German, Italian" required>
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Language</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Add Language</button>
                 </div>
             </div>
         </div>

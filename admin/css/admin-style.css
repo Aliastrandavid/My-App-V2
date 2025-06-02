@@ -133,3 +133,17 @@ main {
     right: 1rem;
     min-width: 300px;
 }
+
+/* Media library thumbnails */
+.media-preview img.card-img-top {
+width: 150px;
+    height: 150px;
+    object-fit: contain;
+    display: block;
+    background: conic-gradient(#bebebe 90deg, #d1d1d1 90deg 180deg, #bebebe 180deg 270deg, #d1d1d1 270deg);
+    background-repeat: repeat;
+    background-size: 20px 20px;
+    background-position: top left;
+    margin-left: auto;
+    margin-right: auto;
+}

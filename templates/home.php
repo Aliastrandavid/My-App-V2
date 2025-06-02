@@ -116,7 +116,7 @@ $page_description = isset($home_page['meta_description_' . CURRENT_LANG])
     <footer class="bg-light py-4 mt-5">
         <div class="container">
             <p class="text-center text-muted mb-0">
-                <a href="/admin/dashboard.php">Admin</a>
+                <a href="./admin/dashboard.php">Admin</a>
                 &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_title); ?>
             </p>
         </div>

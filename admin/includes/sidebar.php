@@ -9,7 +9,7 @@ $user_role = $_SESSION['role'] ?? '';
     <div class="position-sticky pt-3">
         <!-- Site logo and title -->
         <div class="px-3 py-3 mb-3 text-white">
-            <h4>Flat CMS</h4>
+            <a href="../" class="text-decoration-none text-reset"><h4>Flat CMS</h4></a>
             <small>Welcome, <?php echo htmlspecialchars($username); ?></small>
         </div>
         

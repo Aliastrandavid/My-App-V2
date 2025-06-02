@@ -12,17 +12,38 @@ require_once 'functions.php';
  * @return array
  */
 function get_all_media() {
-    $media_file = STORAGE_PATH . '/media_library.json';
-    
-    if (file_exists($media_file)) {
-        $media = read_json_file($media_file);
-        
-        if (is_array($media)) {
-            return $media;
+    $upload_dir = dirname(__DIR__) . '/uploads/';
+    $media_files = [];
+    if (file_exists($upload_dir) && is_dir($upload_dir)) {
+        $files = scandir($upload_dir);
+        $site_url = function_exists('get_site_url') ? get_site_url() : ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST']);
+        $uploads_path = '/uploads/';
+        $script_name = $_SERVER['SCRIPT_NAME'];
+        $base_dir = rtrim(dirname($script_name), '/\\');
+        if (substr($base_dir, -6) === '/admin') {
+            $base_dir = substr($base_dir, 0, -6);
+        }
+        if ($base_dir !== '' && $base_dir !== '/' && strpos($site_url, $base_dir) === false) {
+            $uploads_path = $base_dir . $uploads_path;
+        }
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..' && !is_dir($upload_dir . $file)) {
+                $file_path = $upload_dir . $file;
+                $media_files[] = [
+                    'id' => $file, // fallback, no id
+                    'name' => $file,
+                    'filename' => $file,
+                    'url' => $site_url . $uploads_path . $file,
+                    'alt' => '',
+                    'description' => '',
+                    'type' => pathinfo($file, PATHINFO_EXTENSION),
+                    'size' => filesize($file_path),
+                    'date' => date('Y-m-d H:i:s', filemtime($file_path))
+                ];
+            }
         }
     }
-    
-    return [];
+    return $media_files;
 }
 
 /**
