@@ -42,7 +42,7 @@ if (!$post_data || $post_data['status'] !== 'published') {
     header("HTTP/1.0 404 Not Found");
     echo "<h1>404 - Post Not Found</h1>";
     echo "<p>The post you are looking for does not exist or is not published.</p>";
-    echo "<p><a href='" . get_site_url() . "'>Go to homepage</a></p>";
+    echo "<p><a href='" . get_site_url() . "/" . CURRENT_LANG . "'>Go to homepage</a></p>";
     exit;
 }
 
@@ -108,7 +108,7 @@ $tags = isset($post_data['tax_tag']) ? $post_data['tax_tag'] : [];
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="<?php echo get_site_url(); ?>"><?php echo htmlspecialchars($site_title); ?></a>
+            <a class="navbar-brand" href="<?php echo get_site_url() . '/' . CURRENT_LANG; ?>"><?php echo htmlspecialchars($site_title); ?></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

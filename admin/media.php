@@ -12,6 +12,13 @@ require_once '../includes/functions.php';
 
 $username = $_SESSION['username'] ?? 'User';
 
+// Récupérer les paramètres globaux (media_settings.json)
+$media_settings = [];
+$settings_file = dirname(__DIR__) . '/storage/media_settings.json';
+if (file_exists($settings_file)) {
+    $media_settings = json_decode(file_get_contents($settings_file), true);
+}
+
 // Check for file upload
 $upload_message = '';
 $upload_success = false;
@@ -29,10 +36,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['media_file'])) {
     $format = $_POST['media_format'] ?? 'keep';
     $files = $_FILES['media_file'];
     $count = is_array($files['name']) ? count($files['name']) : 1;
+    $max_size = $media_settings['max_upload_size'] ?? 10485760;
+    $allowed_types = array_map('strtolower', $media_settings['allowed_types'] ?? ['jpg','jpeg','png','gif','webp']);
     for ($i = 0; $i < $count; $i++) {
         $name = is_array($files['name']) ? $files['name'][$i] : $files['name'];
         $tmp = is_array($files['tmp_name']) ? $files['tmp_name'][$i] : $files['tmp_name'];
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if ($files['size'][$i] > $max_size) {
+            $upload_message = 'Le fichier "' . htmlspecialchars($name) . '" dépasse la taille maximale autorisée (' . round($max_size/1048576,1) . ' Mo).';
+            $upload_success = false;
+            break;
+        }
+        if (!in_array($ext, $allowed_types)) {
+            $upload_message = 'Le type de fichier "' . htmlspecialchars($name) . '" n\'est pas autorisé.';
+            $upload_success = false;
+            break;
+        }
         $base = preg_replace('/\.[^.]+$/', '', $name);
         $target_ext = ($format !== 'keep') ? $format : $ext;
         $target_name = $base . '.' . $target_ext;
@@ -41,46 +60,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['media_file'])) {
         move_uploaded_file($tmp, $target_path);
         // Générer les versions _m, _d, _t
         require_once '../includes/functions.php';
-        $sizes = ['m' => 480, 'd' => 1200, 't' => 150];
+        $sizes = ['m' => 480, 'd' => 1920, 't' => 150];
         foreach ($sizes as $suffix => $width) {
             $new_filename = get_versioned_filename($target_name, $suffix);
             $new_destination = $upload_dir . $new_filename;
             resize_image($target_path, $new_destination, $width, $target_ext);
         }
-        // Mettre à jour le JSON (ajout ou update)
-        $found = false;
-        foreach ($media_library as &$item) {
-            if ($item['filename'] === $target_name) {
-                $item['name'] = $base;
-                $item['filename'] = $target_name;
-                $item['url'] = '/uploads/' . $target_name;
-                $item['type'] = $target_ext;
-                $item['size'] = filesize($target_path);
-                $item['date'] = date('Y-m-d H:i:s');
-                // Champs multilingues vides si non présents
-                if (!isset($item['alt']) || !is_array($item['alt'])) $item['alt'] = [];
-                if (!isset($item['description']) || !is_array($item['description'])) $item['description'] = [];
-                foreach ($active_languages as $lang) {
-                    if (!isset($item['alt'][$lang])) $item['alt'][$lang] = '';
-                    if (!isset($item['description'][$lang])) $item['description'][$lang] = '';
+        // Mettre à jour le JSON (ajout ou update) UNIQUEMENT pour l'original
+        if (!preg_match('/(_m|_d|_t)\.[a-z0-9]+$/i', $target_name)) {
+            $found = false;
+            foreach ($media_library as &$item) {
+                if ($item['filename'] === $target_name) {
+                    $item['name'] = $base;
+                    $item['filename'] = $target_name;
+                    $item['url'] = '../uploads/' . $target_name;
+                    $item['type'] = $target_ext;
+                    $item['size'] = filesize($target_path);
+                    $item['date'] = date('Y-m-d H:i:s');
+                    // Champs multilingues vides si non présents
+                    if (!isset($item['alt']) || !is_array($item['alt'])) $item['alt'] = [];
+                    if (!isset($item['description']) || !is_array($item['description'])) $item['description'] = [];
+                    foreach ($active_languages as $lang) {
+                        if (!isset($item['alt'][$lang])) $item['alt'][$lang] = '';
+                        if (!isset($item['description'][$lang])) $item['description'][$lang] = '';
+                    }
+                    $found = true;
+                    break;
                 }
-                $found = true;
-                break;
             }
-        }
-        if (!$found) {
-            $new_item = [
-                'id' => uniqid(),
-                'name' => $base,
-                'filename' => $target_name,
-                'url' => '/uploads/' . $target_name,
-                'alt' => array_fill_keys($active_languages, ''),
-                'description' => array_fill_keys($active_languages, ''),
-                'type' => $target_ext,
-                'size' => filesize($target_path),
-                'date' => date('Y-m-d H:i:s')
-            ];
-            $media_library[] = $new_item;
+            if (!$found) {
+                $new_item = [
+                    'id' => uniqid(),
+                    'name' => $base,
+                    'filename' => $target_name,
+                    'url' => '/uploads/' . $target_name,
+                    'alt' => array_fill_keys($active_languages, ''),
+                    'description' => array_fill_keys($active_languages, ''),
+                    'type' => $target_ext,
+                    'size' => filesize($target_path),
+                    'date' => date('Y-m-d H:i:s')
+                ];
+                $media_library[] = $new_item;
+            }
         }
     }
     file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -122,6 +143,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'update_meta' && $_SERVER['REQ
 if (isset($_GET['action']) && $_GET['action'] === 'save_cropped' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $upload_dir = '../uploads/';
     if (!isset($_FILES['cropped_image']) || !isset($_POST['original_filename']) || !isset($_POST['crop_format'])) {
+        header('Content-Type: application/json');
         echo json_encode(['success' => false, 'error' => 'missing data']);
         exit;
     }
@@ -131,68 +153,208 @@ if (isset($_GET['action']) && $_GET['action'] === 'save_cropped' && $_SERVER['RE
     $target_ext = strtolower($_POST['crop_format']);
     $cropped_path = $upload_dir . $base_name . '.' . $target_ext;
     $cropped_tmp = $_FILES['cropped_image']['tmp_name'];
-    $img = imagecreatefrompng($cropped_tmp);
+    $img = false;
+    if ($target_ext === 'jpg' || $target_ext === 'jpeg') {
+        $img = @imagecreatefromjpeg($cropped_tmp);
+    } elseif ($target_ext === 'webp') {
+        $img = @imagecreatefromwebp($cropped_tmp);
+    } elseif ($target_ext === 'gif') {
+        $img = @imagecreatefromgif($cropped_tmp);
+    } else {
+        $img = @imagecreatefrompng($cropped_tmp);
+    }
     $success = false;
     if ($img) {
         switch ($target_ext) {
             case 'jpg':
-            case 'jpeg': $success = imagejpeg($img, $cropped_path, 90); break;
-            case 'webp': $success = imagewebp($img, $cropped_path, 90); break;
-            case 'gif': $success = imagegif($img, $cropped_path); break;
-            case 'png': default: $success = imagepng($img, $cropped_path, 6); break;
+            case 'jpeg':
+                $success = imagejpeg($img, $cropped_path, 90);
+                break;
+            case 'png':
+                imagealphablending($img, false);
+                imagesavealpha($img, true);
+                $success = imagepng($img, $cropped_path, 6);
+                break;
+            case 'webp':
+                imagepalettetotruecolor($img);
+                imagealphablending($img, false);
+                imagesavealpha($img, true);
+                $success = imagewebp($img, $cropped_path, 90);
+                break;
+            case 'gif':
+                $success = imagegif($img, $cropped_path);
+                break;
         }
         imagedestroy($img);
     }
     if ($success) {
         require_once '../includes/functions.php';
         $sizes = [
-            'm' => 480,
-            'd' => 1200,
-            't' => 150
+            '_t' => 200,
+            '_m' => 600,
+            '_d' => 1200
         ];
         foreach ($sizes as $suffix => $width) {
-            $new_filename = get_versioned_filename($base_name . '.' . $target_ext, $suffix);
-            $new_destination = $upload_dir . $new_filename;
-            resize_image($cropped_path, $new_destination, $width, $target_ext);
+            $src = $cropped_path;
+            $dst = $upload_dir . $base_name . $suffix . '.' . $target_ext;
+            list($w, $h) = getimagesize($src);
+            $ratio = $width / $w;
+            $new_w = $width;
+            $new_h = (int)($h * $ratio);
+            $thumb = imagecreatetruecolor($new_w, $new_h);
+            // Transparence PNG/WebP
+            if ($target_ext === 'png' || $target_ext === 'webp') {
+                imagealphablending($thumb, false);
+                imagesavealpha($thumb, true);
+                $transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+                imagefilledrectangle($thumb, 0, 0, $new_w, $new_h, $transparent);
+            }
+            $src_img = false;
+            if ($target_ext === 'jpg' || $target_ext === 'jpeg') {
+                $src_img = imagecreatefromjpeg($src);
+            } elseif ($target_ext === 'webp') {
+                $src_img = imagecreatefromwebp($src);
+            } elseif ($target_ext === 'gif') {
+                $src_img = imagecreatefromgif($src);
+            } else {
+                $src_img = imagecreatefrompng($src);
+            }
+            if ($src_img) {
+                imagecopyresampled($thumb, $src_img, 0, 0, 0, 0, $new_w, $new_h, $w, $h);
+                switch ($target_ext) {
+                    case 'jpg':
+                    case 'jpeg':
+                        imagejpeg($thumb, $dst, 90);
+                        break;
+                    case 'png':
+                        imagepng($thumb, $dst, 6);
+                        break;
+                    case 'webp':
+                        imagewebp($thumb, $dst, 90);
+                        break;
+                    case 'gif':
+                        imagegif($thumb, $dst);
+                        break;
+                }
+                imagedestroy($src_img);
+            }
+            imagedestroy($thumb);
         }
-        // Mettre à jour la taille et la date dans media_library.json
+        // Mettre à jour la taille, la date et les dimensions dans media_library.json UNIQUEMENT pour l'original
         $media_json = dirname(__DIR__) . '/storage/media_library.json';
         $media_library = file_exists($media_json) ? json_decode(file_get_contents($media_json), true) : [];
         foreach ($media_library as &$item) {
-            if ($item['filename'] === $base_name . '.' . $ext) {
+            if ($item['filename'] === $base_name . '.' . $target_ext) {
                 $item['size'] = filesize($cropped_path);
-                $item['date'] = date('Y-m-d H:i:s');
-                $item['filename'] = $base_name . '.' . $target_ext;
-                $item['url'] = '/uploads/' . $base_name . '.' . $target_ext;
-                $item['type'] = $target_ext;
+                $item['date'] = date('Y-m-d H:i:s', filemtime($cropped_path));
             }
         }
+        unset($item);
+        // Nettoyage : ne garder que les originaux (pas de _t, _m, _d)
+        $media_library = array_values(array_filter($media_library, function($item) {
+            return !preg_match('/_[mdt]\.[a-z0-9]+$/i', $item['filename']);
+        }));
         file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        header('Content-Type: application/json');
         echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'move failed']);
+        $err = error_get_last();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'move failed', 'php_error' => $err]);
     }
     exit;
 }
-
-// Gestion AJAX côté PHP pour vérifier les doublons à l'upload
-if (isset($_GET['action']) && $_GET['action'] === 'check_duplicates' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $upload_dir = '../uploads/';
-    $file_names = $_POST['file_names'] ?? [];
-    $format = $_POST['format'] ?? 'keep';
-    $duplicates = [];
-    foreach ($file_names as $name) {
-        $original_name = pathinfo($name, PATHINFO_FILENAME);
-        $ext = pathinfo($name, PATHINFO_EXTENSION);
-        $target_ext = ($format !== 'keep') ? $format : $ext;
-        $filename = $original_name . '.' . $target_ext;
-        if (file_exists($upload_dir . $filename)) {
-            $duplicates[] = $filename;
+// --- Suppression d'un média via AJAX ---
+if (isset($_GET['action']) && $_GET['action'] === 'delete_media' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $raw = file_get_contents('php://input');
+    $input = json_decode($raw, true);
+    if (!is_array($input)) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON']);
+        exit;
+    }
+    $media_id = $input['id'] ?? null;
+    $media_json = dirname(__DIR__) . '/storage/media_library.json';
+    $media_library = file_exists($media_json) ? json_decode(file_get_contents($media_json), true) : [];
+    $deleted = false;
+    $php_error = null;
+    if ($media_id) {
+        foreach ($media_library as $k => $item) {
+            if ($item['id'] === $media_id) {
+                $filename = $item['filename'];
+                $base = preg_replace('/(\.[^.]+)$/', '', $filename);
+                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                $upload_dir = '../uploads/';
+                $orig_path = $upload_dir . $filename;
+                if (file_exists($orig_path)) {
+                    if (!@unlink($orig_path)) $php_error = error_get_last();
+                }
+                foreach (['_t', '_m', '_d'] as $suffix) {
+                    $variant = $upload_dir . $base . $suffix . '.' . $ext;
+                    if (file_exists($variant)) {
+                        if (!@unlink($variant)) $php_error = error_get_last();
+                    }
+                }
+                unset($media_library[$k]);
+                $deleted = true;
+                break;
+            }
         }
+        $media_library = array_values($media_library);
+        file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
     header('Content-Type: application/json');
-    echo json_encode(['duplicates' => $duplicates]);
+    echo json_encode(['success' => $deleted, 'php_error' => $php_error]);
     exit;
+}
+// --- Suppression multiple de médias via AJAX ---
+if (isset($_GET['action']) && $_GET['action'] === 'multi_delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $raw = file_get_contents('php://input');
+    $input = json_decode($raw, true);
+    if (!is_array($input)) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON']);
+        exit;
+    }
+    $ids = $input['ids'] ?? [];
+    $media_json = dirname(__DIR__) . '/storage/media_library.json';
+    $media_library = file_exists($media_json) ? json_decode(file_get_contents($media_json), true) : [];
+    $deleted = [];
+    $php_error = null;
+    if ($ids && is_array($ids)) {
+        foreach ($ids as $media_id) {
+            foreach ($media_library as $k => $item) {
+                if ($item['id'] === $media_id) {
+                    $filename = $item['filename'];
+                    $base = preg_replace('/(\.[^.]+)$/', '', $filename);
+                    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    $upload_dir = '../uploads/';
+                    $orig_path = $upload_dir . $filename;
+                    if (file_exists($orig_path)) {
+                        if (!@unlink($orig_path)) $php_error = error_get_last();
+                    }
+                    foreach (['_t', '_m', '_d'] as $suffix) {
+                        $variant = $upload_dir . $base . $suffix . '.' . $ext;
+                        if (file_exists($variant)) {
+                            if (!@unlink($variant)) $php_error = error_get_last();
+                        }
+                    }
+                    unset($media_library[$k]);
+                    $deleted[] = $media_id;
+                    break;
+                }
+            }
+        }
+        $media_library = array_values($media_library);
+        file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'deleted' => $deleted, 'php_error' => $php_error]);
+        exit;
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'No IDs provided']);
+        exit;
+    }
 }
 
 // Get all media files
@@ -206,37 +368,50 @@ $media_library = file_exists($media_json) ? json_decode(file_get_contents($media
 // Synchroniser media_library.json avec tous les fichiers images présents dans /uploads
 $existing_filenames = array_map(function($entry) { return $entry['filename']; }, $media_library);
 $upload_files = scandir($upload_dir);
+$media_library_changed = false;
 foreach ($upload_files as $file) {
     if ($file !== '.' && $file !== '..' && !is_dir($upload_dir . $file)) {
         $is_image = preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file);
-        $is_thumb = preg_match('/_t\.(jpg|jpeg|png|gif|webp)$/i', $file); // détecter les vignettes
+        $is_thumb = preg_match('/_[mdt]\.(jpg|jpeg|png|gif|webp)$/i', $file); // détecter les vignettes
         if ($is_image && !$is_thumb && !in_array($file, $existing_filenames)) {
+            // Ajouter uniquement les originaux
+            $id = uniqid();
+            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $name = preg_replace('/\.[^.]+$/', '', $file);
             $file_path = $upload_dir . $file;
-            $media_item = [
-                'id' => uniqid(),
-                'name' => pathinfo($file, PATHINFO_FILENAME),
+            $size = file_exists($file_path) ? filesize($file_path) : 0;
+            $date = file_exists($file_path) ? date('Y-m-d H:i:s', filemtime($file_path)) : date('Y-m-d H:i:s');
+            $media_library[] = [
+                'id' => $id,
+                'name' => $name,
                 'filename' => $file,
                 'url' => '/uploads/' . $file,
-                'alt' => '',
-                'description' => '',
-                'type' => pathinfo($file, PATHINFO_EXTENSION),
-                'size' => filesize($file_path),
-                'date' => date('Y-m-d H:i:s', filemtime($file_path))
+                'alt' => [ 'en' => '', 'fr' => '', 'es' => '' ],
+                'description' => [ 'en' => '', 'fr' => '', 'es' => '' ],
+                'type' => $ext,
+                'size' => $size,
+                'date' => $date
             ];
-            $media_library[] = $media_item;
+            $media_library_changed = true;
         }
     }
 }
-// Réécrire le JSON si modifié
-file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+if ($media_library_changed) {
+    // Nettoyer le JSON pour ne garder que les originaux (pas de _t, _m, _d)
+    $media_library = array_values(array_filter($media_library, function($item) {
+        return !preg_match('/_[mdt]\.[a-z0-9]+$/i', $item['filename']);
+    }));
+    file_put_contents($media_json, json_encode($media_library, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+}
 
-// Correction : n'afficher que les originaux (pas de _m, _d, _t dans filename)
+// Correction : n'afficher que les originaux (pas de _m, _d, _t dans filename) ET inclure les GIF
 function is_original_image($filename) {
-    return !preg_match('/_[mdt]\.[a-z0-9]+$/i', $filename);
+    // Inclure GIF et autres formats
+    return !preg_match('/_[mdt]\.[a-z0-9]+$/i', $filename) && preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $filename);
 }
 // Correction : préfixer les chemins de vignettes et originaux par ".." pour l'accès serveur
 function get_thumb_path($base, $upload_dir) {
-    $exts = ['jpg', 'jpeg', 'png', 'webp'];
+    $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif']; // Ajout gif
     foreach ($exts as $ext) {
         $thumb = $base . '_t.' . $ext;
         $thumb_path = $upload_dir . $thumb;
@@ -251,30 +426,41 @@ foreach ($media_library as $entry) {
     if (!is_original_image($entry['filename'])) continue;
     $base = preg_replace('/(\.[^.]+)$/', '', $entry['filename']);
     list($thumb_url, $thumb_path) = get_thumb_path($base, $upload_dir);
-    if ($thumb_url && $thumb_path) {
+    $orig_path = $upload_dir . $entry['filename'];
+    if ($thumb_url && $thumb_path && file_exists($orig_path)) {
+        // Afficher la taille et dimensions de l'original, pas du thumb
+        $file_size = filesize($orig_path);
+        $img_info = @getimagesize($orig_path);
+        $img_w = $img_info ? $img_info[0] : null;
+        $img_h = $img_info ? $img_info[1] : null;
         $media_files[] = [
             'name' => basename($thumb_url),
             'path' => $thumb_url,
-            'size' => filesize($thumb_path),
-            'type' => 'image/' . pathinfo($thumb_url, PATHINFO_EXTENSION),
-            'date' => filemtime($thumb_path),
+            'size' => $file_size,
+            'type' => 'image/' . pathinfo($orig_path, PATHINFO_EXTENSION),
+            'date' => filemtime($orig_path),
             'original' => $entry['filename'],
-            'meta' => $entry
+            'meta' => $entry,
+            'img_w' => $img_w,
+            'img_h' => $img_h
         ];
-    } else {
-        $orig_path = $upload_dir . $entry['filename'];
-        if (file_exists($orig_path)) {
-            $file_url = '../uploads/' . $entry['filename'];
-            $media_files[] = [
-                'name' => $entry['filename'],
-                'path' => $file_url,
-                'size' => filesize($orig_path),
-                'type' => 'image/' . pathinfo($entry['filename'], PATHINFO_EXTENSION),
-                'date' => filemtime($orig_path),
-                'original' => $entry['filename'],
-                'meta' => $entry
-            ];
-        }
+    } else if (file_exists($orig_path)) {
+        $file_url = '../uploads/' . $entry['filename'];
+        $file_size = filesize($orig_path);
+        $img_info = @getimagesize($orig_path);
+        $img_w = $img_info ? $img_info[0] : null;
+        $img_h = $img_info ? $img_info[1] : null;
+        $media_files[] = [
+            'name' => basename($file_url),
+            'path' => $file_url,
+            'size' => $file_size,
+            'type' => 'image/' . pathinfo($orig_path, PATHINFO_EXTENSION),
+            'date' => filemtime($orig_path),
+            'original' => $entry['filename'],
+            'meta' => $entry,
+            'img_w' => $img_w,
+            'img_h' => $img_h
+        ];
     }
 }
 
@@ -401,7 +587,7 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                 </form>
                 
                 <!-- Bouton suppression multiple -->
-                <form id="multi-delete-form" method="post" action="media.php" onsubmit="return confirm('Supprimer les médias sélectionnés ?');">
+                <form id="multi-delete-form" method="post" action="media.php">
                     <div class="mb-2">
                         <button type="submit" class="btn btn-danger btn-sm" name="multi_delete" id="multi-delete-btn" disabled>
                             <i class="bi bi-trash"></i> Supprimer la sélection
@@ -417,44 +603,78 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                         <?php else: ?>
                             <?php foreach ($media_files as $file): ?>
                                 <?php 
-                                    // Correction : utiliser le nom de l'original pour retrouver l'entrée JSON
                                     $media_entry = find_media_entry($media_library, $file['original']); 
                                     $media_data = $media_entry ? htmlspecialchars(json_encode($media_entry), ENT_QUOTES, 'UTF-8') : '{}';
+                                    $thumb_url = $file['path'];
+                                    $thumb_url_cb = $thumb_url . '?cb=' . time();
+                                    $original_name = $media_entry ? $media_entry['filename'] : $file['name'];
+                                    $orig_path = $upload_dir . $original_name;
+                                    $date_creation = $media_entry ? (isset($media_entry['date']) ? $media_entry['date'] : '') : '';
+                                    $date_modif = file_exists($orig_path) ? date('Y-m-d H:i:s', filemtime($orig_path)) : '';
+                                    $base = preg_replace('/(\.[^.]+)$/', '', $original_name);
+                                    $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+                                    $thumb_candidate = $upload_dir . $base . '_t.' . $ext;
+                                    if (file_exists($thumb_candidate)) {
+                                        $thumb_url_cb = '../uploads/' . $base . '_t.' . $ext . '?cb=' . time();
+                                        $thumb_size = filesize($thumb_candidate);
+                                        $thumb_type = 'image/' . $ext;
+                                        $img_path = $thumb_candidate;
+                                    } else if (file_exists($orig_path)) {
+                                        $thumb_url_cb = '../uploads/' . $original_name . '?cb=' . time();
+                                        $thumb_size = filesize($orig_path);
+                                        $thumb_type = 'image/' . $ext;
+                                        $img_path = $orig_path;
+                                    } else {
+                                        $thumb_size = $file['size'];
+                                        $thumb_type = $file['type'];
+                                        $img_path = null;
+                                    }
+                                    // Récup dimensions HxL
+                                    $img_w = $img_h = null;
+                                    if ($img_path) {
+                                        $img_info = @getimagesize($img_path);
+                                        if ($img_info) { $img_w = $img_info[0]; $img_h = $img_info[1]; }
+                                    }
                                 ?>
                                 <div class="col-md-2 mb-4">
                                     <div class="card h-100 position-relative">
+                                        <div class="card-header d-flex justify-content-between align-items-center p-1" style="background:rgba(0,0,0,0.03);">
+                                            <input type="checkbox" class="form-check-input multi-delete-checkbox" name="delete_ids[]" value="<?php echo htmlspecialchars($media_entry ? $media_entry['id'] : ''); ?>">
+                                            <div class="d-flex gap-1">
+                                                <?php if ($media_entry): ?>
+                                                <button type="button" class="btn btn-sm btn-light edit-media-btn" title="Éditer les métadonnées" data-media='<?php echo $media_data; ?>'>
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-light edit-image-btn" title="Éditer l'image" data-image="<?php echo htmlspecialchars($media_entry['filename']); ?>" data-original="<?php echo htmlspecialchars(get_original_filename($media_entry['filename'])); ?>">
+                                                    <i class="bi bi-scissors"></i>
+                                                </button>
+                                                <?php endif; ?>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-danger ms-1 delete-media-btn" title="Supprimer ce média" data-id="<?php echo htmlspecialchars($media_entry ? $media_entry['id'] : ''); ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                         <div class="media-preview">
-                                            <input type="checkbox" class="form-check-input position-absolute top-0 start-0 m-2 multi-delete-checkbox" name="delete_ids[]" value="<?php echo htmlspecialchars($media_entry ? $media_entry['id'] : ''); ?>" style="z-index:2;">
-                                            <img src="<?php echo htmlspecialchars($file['path']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($media_entry && isset($media_entry['alt'][$active_languages[0]]) ? $media_entry['alt'][$active_languages[0]] : $file['name']); ?>">
-                                            <!-- Bouton édition (icône crayon) -->
-                                            <?php if ($media_entry): ?>
-                                            <button type="button" class="btn btn-sm btn-light edit-media-btn position-absolute top-0 end-0 m-2" 
-                                                    title="Éditer les métadonnées" data-media='<?php echo $media_data; ?>'>
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-light edit-image-btn position-absolute top-0 start-50 translate-middle-x m-2"
-                                                    title="Éditer l'image" 
-                                                    data-image="<?php echo htmlspecialchars($media_entry['filename']); ?>"
-                                                    data-original="<?php echo htmlspecialchars(get_original_filename($media_entry['filename'])); ?>">
-                                                <i class="bi bi-scissors"></i>
-                                            </button>
-                                            <a href="<?php echo htmlspecialchars($media_entry['url']); ?>" download class="btn btn-sm btn-light position-absolute bottom-0 end-0 m-2" title="Télécharger">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                            <?php endif; ?>
+                                            <img src="<?php echo htmlspecialchars($thumb_url_cb); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($media_entry && isset($media_entry['alt'][$active_languages[0]]) ? $media_entry['alt'][$active_languages[0]] : $file['name']); ?>">
                                         </div>
                                         <div class="card-body">
-                                            <h5 class="card-title"><?php echo htmlspecialchars($file['name']); ?></h5>
+                                            <h5 class="card-title" style="font-size:1em;word-break:break-all;"><?php echo htmlspecialchars($original_name); ?></h5>
                                             <p class="card-text">
                                                 <small class="text-muted">
-                                                    Type: <?php echo htmlspecialchars($file['type']); ?><br>
-                                                    Size: <?php echo format_file_size($file['size']); ?><br>
-                                                    Date: <?php echo date('M d, Y', $file['date']); ?>
+                                                    Type: <?php echo htmlspecialchars($thumb_type); ?><br>
+                                                    Taille: <?php echo format_file_size($file['size']); ?><br>
+                                                    Dimensions: <?php echo ($file['img_w'] && $file['img_h']) ? $file['img_w'] . '×' . $file['img_h'] : '-'; ?><br>
+                                                    Création: <?php echo $date_creation ? date('d/m/Y H:i:s', strtotime($date_creation)) : '-'; ?><br>
+                                                    Modif.: <?php echo $date_modif ? $date_modif : '-'; ?>
                                                 </small>
                                             </p>
                                         </div>
-                                        <div class="card-footer">
-                                            <!-- ...boutons individuels... -->
+                                        <div class="card-footer d-flex justify-content-end">
+                                            <?php if ($media_entry): ?>
+                                            <a href="<?php echo htmlspecialchars($media_entry['url']); ?>" download class="btn btn-sm btn-light" title="Télécharger">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -567,26 +787,39 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                     </div>
                     <div class="row mb-2">
                         <div class="col">
-                            <label for="crop-width" class="form-label">Largeur (px)</label>
-                            <input type="number" class="form-control" id="crop-width" min="1" value="">
+                            <label for="crop-width" class="form-label">Largeur crop (px)</label>
+                            <input type="number" class="form-control" id="crop-width" min="1" value="" readonly>
                         </div>
                         <div class="col-auto d-flex align-items-end">
-                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 mx-1" id="keep-ratio-btn" title="Garder le ratio" style="height:32px;width:32px;padding:0;display:flex;align-items:center;justify-content:center;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 mx-1" id="keep-ratio-btn" title="Garder le ratio" style="height:32px;width:32px;padding:0;display:flex;align-items:center;justify-content:center;" disabled>
                                 <i class="bi bi-link-45deg"></i>
                             </button>
                         </div>
                         <div class="col">
-                            <label for="crop-height" class="form-label">Hauteur (px)</label>
-                            <input type="number" class="form-control" id="crop-height" min="1" value="">
+                            <label for="crop-height" class="form-label">Hauteur crop (px)</label>
+                            <input type="number" class="form-control" id="crop-height" min="1" value="" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <label for="resize-width" class="form-label">Largeur finale (px)</label>
+                            <input type="number" class="form-control" id="resize-width" min="1" value="">
+                        </div>
+                        <div class="col-auto d-flex align-items-end justify-content-center">
+                            <span style="font-size:1.5em;">×</span>
+                        </div>
+                        <div class="col">
+                            <label for="resize-height" class="form-label">Hauteur finale (px)</label>
+                            <input type="number" class="form-control" id="resize-height" min="1" value="" disabled>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="crop-format" class="form-label">Format de sortie</label>
                         <select class="form-select" id="crop-format" name="crop_format" required>
-                            <option value="keep">Garder le format original</option>
-                            <option value="png">PNG</option>
                             <option value="jpg">JPG</option>
+                            <option value="png">PNG</option>
                             <option value="webp">WEBP</option>
+                            <option value="gif">GIF</option>
                         </select>
                     </div>
                 </div>
@@ -690,6 +923,25 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
             });
         }
 
+        // Utilitaire pour obtenir l'extension d'un nom de fichier
+        function getFileExtension(filename) {
+            return filename.split('.').pop().toLowerCase();
+        }
+
+        // Met à jour le select du format cropper selon l'extension du fichier
+        function setCropFormatSelect(ext) {
+            const select = document.getElementById('crop-format');
+            Array.from(select.options).forEach(opt => {
+                if (opt.value === ext) {
+                    opt.selected = true;
+                } else if (opt.value === 'keep') {
+                    opt.disabled = true;
+                } else {
+                    opt.selected = false;
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.edit-media-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
@@ -704,37 +956,100 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
             let lastRatio = 1;
 
             function updateCropInputsFromCropper() {
-                const data = cropper.getData();
+                if (!window.cropper) return;
+                const data = window.cropper.getData();
                 document.getElementById('crop-width').value = Math.round(data.width);
                 document.getElementById('crop-height').value = Math.round(data.height);
                 lastRatio = data.width / data.height;
             }
 
-            document.getElementById('keep-ratio-btn').onclick = function() {
-                keepRatio = !keepRatio;
-                this.classList.toggle('active', keepRatio);
-            };
+            // Réattache les listeners à chaque ouverture du modal cropper
+            function attachCropperListeners(currentExt) {
+                const saveBtn = document.getElementById('save-cropped-image');
+                // Nettoyage préalable
+                saveBtn.onclick = null;
+                // Bouton enregistrer
+                saveBtn.addEventListener('click', function() {
+                    if (!window.cropper) return;
+                    const cropData = window.cropper.getData();
+                    let width = Math.round(cropData.width);
+                    let height = Math.round(cropData.height);
+                    // Prend en compte le resize si demandé
+                    const resizeW = document.getElementById('resize-width');
+                    const resizeH = document.getElementById('resize-height');
+                    if (resizeW.value) {
+                        width = parseInt(resizeW.value, 10);
+                        height = Math.round(width / (cropData.width / cropData.height));
+                    } else if (resizeH.value) {
+                        height = parseInt(resizeH.value, 10);
+                        width = Math.round(height * (cropData.width / cropData.height));
+                    }
+                    let format = document.getElementById('crop-format').value;
+                    window.cropper.getCroppedCanvas({ width, height }).toBlob(function(blob) {
+                        const formData = new FormData();
+                        formData.append('cropped_image', blob, 'cropped.' + format);
+                        formData.append('original_filename', document.getElementById('crop-filename').textContent);
+                        formData.append('crop_format', format);
+                        fetch('media.php?action=save_cropped', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.success) {
+                                // Forcer le reload complet (cache bust)
+                                window.location.reload(true);
+                            } else {
+                                alert('Erreur lors de l’enregistrement de l’image.');
+                            }
+                        })
+                        .catch(async err => {
+                            // Essaye d'afficher le message d'erreur PHP si ce n'est pas du JSON
+                            const text = await err?.response?.text?.();
+                            alert('Erreur lors de l’enregistrement de l’image.\n' + (text || err));
+                        });
+                    }, 'image/' + (format === 'jpg' ? 'jpeg' : format));
+                });
+                attachResizeInputsListeners();
+            }
 
-            document.getElementById('crop-width').oninput = function() {
-                let w = parseInt(this.value, 10);
-                if (keepRatio) {
-                    let h = Math.round(w / lastRatio);
-                    document.getElementById('crop-height').value = h;
-                    cropper.setCropBoxData({ width: w, height: h });
-                } else {
-                    cropper.setCropBoxData({ width: w });
+            // Inputs resize : l'utilisateur ne peut saisir qu'une seule dimension à la fois
+            function attachResizeInputsListeners() {
+                const resizeW = document.getElementById('resize-width');
+                const resizeH = document.getElementById('resize-height');
+                let cropRatio = 1;
+                // Met à jour le ratio du crop à chaque crop
+                function updateCropRatio() {
+                    if (!window.cropper) return;
+                    const data = window.cropper.getData();
+                    cropRatio = data.width / data.height;
                 }
-            };
-            document.getElementById('crop-height').oninput = function() {
-                let h = parseInt(this.value, 10);
-                if (keepRatio) {
-                    let w = Math.round(h * lastRatio);
-                    document.getElementById('crop-width').value = w;
-                    cropper.setCropBoxData({ width: w, height: h });
-                } else {
-                    cropper.setCropBoxData({ height: h });
+                // Quand on saisit la largeur, on désactive la hauteur
+                resizeW.addEventListener('input', function() {
+                    if (resizeW.value) {
+                        resizeH.value = '';
+                        resizeH.disabled = true;
+                    } else {
+                        resizeH.disabled = false;
+                    }
+                });
+                // Quand on saisit la hauteur, on désactive la largeur
+                resizeH.addEventListener('input', function() {
+                    if (resizeH.value) {
+                        resizeW.value = '';
+                        resizeW.disabled = true;
+                    } else {
+                        resizeW.disabled = false;
+                    }
+                });
+                // Met à jour le ratio à chaque crop
+                if (window.cropper) {
+                    window.cropper.options.crop = function() {
+                        updateCropInputsFromCropper();
+                        updateCropRatio();
+                    };
                 }
-            };
+            }
 
             document.querySelectorAll('.edit-image-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
@@ -742,12 +1057,13 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                     const filename = this.dataset.image;
                     const original = this.dataset.original || filename;
                     document.getElementById('crop-filename').textContent = original;
-                    // Charger toujours l'originale avec le bon chemin relatif
                     let imgSrc = '../uploads/' + original;
+                    const ext = getFileExtension(original);
+                    setCropFormatSelect(ext);
                     const testImg = new Image();
                     testImg.onload = function() {
                         document.getElementById('cropper-image').src = imgSrc;
-                        showCropperModal(original);
+                        showCropperModal(original, ext);
                     };
                     testImg.onerror = function() {
                         document.getElementById('cropper-image').src = '';
@@ -757,8 +1073,7 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                 });
             });
 
-            // --- RÉTABLIR LE CROPPER (version précédente, zone de sélection par défaut) ---
-            function showCropperModal(filename) {
+            function showCropperModal(filename, ext) {
                 var modal = new bootstrap.Modal(document.getElementById('editImageModal'));
                 modal.show();
                 setTimeout(() => {
@@ -774,7 +1089,6 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                         scalable: true,
                         aspectRatio: NaN,
                         ready() {
-                            // Zone de crop par défaut (80% de l'image, centrée)
                             const data = window.cropper.getImageData();
                             const cropW = data.naturalWidth * 0.8;
                             const cropH = data.naturalHeight * 0.8;
@@ -784,36 +1098,17 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                                 width: cropW,
                                 height: cropH
                             });
+                            document.getElementById('crop-width').value = Math.round(data.naturalWidth);
+                            document.getElementById('crop-height').value = Math.round(data.naturalHeight);
+                            lastRatio = data.naturalWidth / data.naturalHeight;
+                            attachCropperListeners(ext); // <-- Attache les listeners à chaque ouverture
+                        },
+                        crop() {
+                            updateCropInputsFromCropper();
                         }
                     });
                 }, 400);
             }
-
-            document.getElementById('save-cropped-image').addEventListener('click', function() {
-                if (!cropper) return;
-                const width = parseInt(document.getElementById('crop-width').value, 10);
-                const height = parseInt(document.getElementById('crop-height').value, 10);
-                const format = document.getElementById('crop-format').value;
-                cropper.getCroppedCanvas({ width, height }).toBlob(function(blob) {
-                    const formData = new FormData();
-                    formData.append('cropped_image', blob, 'cropped.' + format);
-                    // Utilise le vrai nom original stocké dans le span crop-filename
-                    formData.append('original_filename', document.getElementById('crop-filename').textContent);
-                    formData.append('crop_format', format);
-                    fetch('media.php?action=save_cropped', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            location.reload();
-                        } else {
-                            alert('Erreur lors de l’enregistrement de l’image.');
-                        }
-                    });
-                }, 'image/' + (format === 'jpg' ? 'jpeg' : format));
-            });
 
             // Gestion activation bouton suppression multiple
             const checkboxes = document.querySelectorAll('.multi-delete-checkbox');
@@ -829,8 +1124,8 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
         document.addEventListener('DOMContentLoaded', function() {
             const uploadForm = document.querySelector('#uploadModal form');
             if (uploadForm) {
-                uploadForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
+                // On garde une référence sur le handler pour pouvoir le retirer si besoin
+                function uploadSubmitHandler(e) {
                     const files = document.getElementById('media_file').files;
                     if (!files.length) return;
                     const format = document.getElementById('media_format').value;
@@ -839,6 +1134,8 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                         formData.append('file_names[]', files[i].name);
                     }
                     formData.append('format', format);
+                    // On vérifie les doublons en AJAX
+                    e.preventDefault();
                     fetch('media.php?action=check_duplicates', {
                         method: 'POST',
                         body: formData
@@ -848,13 +1145,22 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                         if (res.duplicates && res.duplicates.length) {
                             showDuplicateModal(res.duplicates, files, format);
                         } else {
+                            // On retire le handler pour éviter la boucle infinie
+                            uploadForm.removeEventListener('submit', uploadSubmitHandler);
                             uploadForm.submit();
                         }
+                    })
+                    .catch(() => {
+                        // En cas d'erreur, on laisse le submit natif
+                        uploadForm.removeEventListener('submit', uploadSubmitHandler);
+                        uploadForm.submit();
                     });
-                });
+                }
+                // On attache le handler
+                uploadForm.addEventListener('submit', uploadSubmitHandler);
             }
 
-            // Fonction JS pour afficher le modal de résolution des doublons
+            // Fonction JS pour afficher le modal de résolution des doublons à l'upload
             function showDuplicateModal(duplicates, files, format) {
                 const modalBody = document.getElementById('duplicate-modal-body');
                 modalBody.innerHTML = '';
@@ -926,75 +1232,76 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                 };
             }
         });
-    </script>
 
-    <!-- Modal pour les fichiers en double -->
-    <div class="modal fade" id="duplicateFileModal" tabindex="-1" aria-labelledby="duplicateFileModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="duplicateFileModalLabel">Doublons détectés</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="duplicateFileModalContent">
-                    <!-- Contenu dynamique ajouté par JavaScript -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal HTML pour résolution des doublons à l'upload -->
-    <div class="modal fade" id="duplicateModal" tabindex="-1" aria-labelledby="duplicateModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="resolve-duplicates-form">
-            <div class="modal-header">
-              <h5 class="modal-title" id="duplicateModalLabel">Doublons détectés</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="duplicate-modal-body">
-              <!-- Contenu dynamique JS -->
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-              <button type="submit" class="btn btn-primary">Valider et uploader</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-<?php
-// Suppression multiple côté PHP
-if (isset($_POST['multi_delete']) && !empty($_POST['delete_ids'])) {
-    $delete_ids = $_POST['delete_ids'];
-    $media_json = dirname(__DIR__) . '/storage/media_library.json';
-    $media_library = file_exists($media_json) ? json_decode(file_get_contents($media_json), true) : [];
-    $upload_dir = '../uploads/';
-    $to_keep = [];
-    foreach ($media_library as $item) {
-        if (!in_array($item['id'], $delete_ids)) {
-            $to_keep[] = $item;
-        } else {
-            // Supprimer les fichiers associés (_m, _d, _t et original)
-            $base = preg_replace('/(\.[^.]+)$/', '', $item['filename']);
-            $ext = pathinfo($item['filename'], PATHINFO_EXTENSION);
-            $files = [
-                $item['filename'],
-                $base . '_m.' . $ext,
-                $base . '_d.' . $ext,
-                $base . '_t.' . $ext
-            ];
-            foreach ($files as $f) {
-                $fp = $upload_dir . $f;
-                if (file_exists($fp)) @unlink($fp);
+        // Suppression d'un média (AJAX) - delegation d'événement pour robustesse
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.delete-media-btn');
+            if (btn) {
+                e.preventDefault();
+                if (btn.disabled) return;
+                const mediaId = btn.dataset.id;
+                if (!mediaId) return;
+                if (!confirm('Supprimer ce média ?')) return;
+                btn.disabled = true;
+                fetch('media.php?action=delete_media', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: mediaId })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression du média.');
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    alert('Erreur lors de la suppression du média.');
+                    btn.disabled = false;
+                });
             }
+        });
+        // Suppression multiple de médias (AJAX)
+        const multiDeleteForm = document.getElementById('multi-delete-form');
+        if (multiDeleteForm) {
+            multiDeleteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const checked = Array.from(document.querySelectorAll('.multi-delete-checkbox:checked'));
+                if (!checked.length) return;
+                if (!confirm('Supprimer les médias sélectionnés ?')) return;
+                const ids = checked.map(cb => cb.value);
+                const btn = document.getElementById('multi-delete-btn');
+                if (btn) btn.disabled = true;
+                fetch('media.php?action=multi_delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        window.location.reload(true);
+                    } else {
+                        alert('Erreur lors de la suppression multiple.');
+                        if (btn) btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    alert('Erreur lors de la suppression multiple.');
+                    if (btn) btn.disabled = false;
+                });
+            });
         }
-    }
-    file_put_contents($media_json, json_encode($to_keep, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    header('Location: media.php');
-    exit;
-}
+        // Gestion dynamique du bouton suppression multiple
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('multi-delete-checkbox')) {
+                const checkboxes = document.querySelectorAll('.multi-delete-checkbox');
+                const btn = document.getElementById('multi-delete-btn');
+                if (btn) btn.disabled = !Array.from(checkboxes).some(c => c.checked);
+            }
+        });
+    </script>
+</body>
+</html>

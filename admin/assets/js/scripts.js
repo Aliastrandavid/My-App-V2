@@ -27,7 +27,35 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleLayout('list');
     }
     
-    // Infinite scroll removed as requested
+    // Validation upload media côté client (taille/type)
+    const uploadForm = document.querySelector('#uploadModal form');
+    if (uploadForm && window.MEDIA_SETTINGS) {
+        uploadForm.addEventListener('submit', function(e) {
+            const filesInput = document.getElementById('media_file');
+            if (!filesInput) return;
+            const files = filesInput.files;
+            const maxSize = window.MEDIA_SETTINGS.max_upload_size || 10485760;
+            const allowedTypes = (window.MEDIA_SETTINGS.allowed_types || ['jpg','jpeg','png','gif','webp']).map(t => t.toLowerCase());
+            let error = '';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (file.size > maxSize) {
+                    error = `Le fichier "${file.name}" dépasse la taille maximale autorisée (${(maxSize/1048576).toFixed(1)} Mo).`;
+                    break;
+                }
+                if (!allowedTypes.includes(ext)) {
+                    error = `Le type de fichier "${file.name}" n'est pas autorisé. Types autorisés : ${allowedTypes.join(', ')}`;
+                    break;
+                }
+            }
+            if (error) {
+                alert(error);
+                e.preventDefault();
+                return false;
+            }
+        }, true);
+    }
 });
 
 /**

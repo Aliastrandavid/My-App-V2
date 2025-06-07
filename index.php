@@ -66,27 +66,30 @@ if (in_array($path_parts[0], get_available_languages())) {
     array_shift($path_parts);
 }
 
-// Correction : si l'URL est vide après retrait de la langue, on est sur l'accueil
-if (empty($path_parts) || (count($path_parts) === 1 && $path_parts[0] === '')) {
-    $page = 'home';
-    $slug = '';
-    $is_post = false;
-} else {
-    // Détection du type de contenu
-    if (!empty($path_parts[0]) && $path_parts[0] === 'blog' && isset($path_parts[1])) {
+// Default page is home
+$page = 'home';
+$slug = '';
+$is_post = false;
+
+// Determine what to load
+if (!empty($path_parts[0])) {
+    if ($path_parts[0] === 'blog' && isset($path_parts[1])) {
         // Blog post
         $page = 'post';
         $slug = $path_parts[1];
         $is_post = true;
-    } elseif (!empty($path_parts[0])) {
-        // Static page ou autre post type
+    } else {
+        // Static page
         $slug = $path_parts[0];
         $static_page = get_static_page_by_slug($slug, CURRENT_LANG);
+        
         if ($static_page) {
             $page = $static_page['id'];
         }
     }
 }
+
+
 
 // Load appropriate template
 if ($is_post) {

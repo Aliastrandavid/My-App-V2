@@ -539,6 +539,11 @@ function resize_image($src, $dest, $new_width, $force_ext = null) {
         imagealphablending($dst_img, false);
         imagesavealpha($dst_img, true);
     }
+    if ($mime === 'image/webp') {
+        imagepalettetotruecolor($dst_img);
+        imagealphablending($dst_img, false);
+        imagesavealpha($dst_img, true);
+    }
     imagecopyresampled($dst_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
     $ext = $force_ext ?: strtolower(pathinfo($dest, PATHINFO_EXTENSION));
     switch ($ext) {
