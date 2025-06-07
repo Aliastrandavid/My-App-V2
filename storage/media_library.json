@@ -1,55 +1,17 @@
 [
     {
-        "id": "6839c6e276bfd",
-        "name": "Snack-bleu",
-        "filename": "Snack-bleu.jpg",
-        "url": "/uploads/Snack-bleu.jpg",
-        "alt": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "description": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "type": "jpg",
-        "size": 109107,
-        "date": "2025-05-30 14:55:30"
-    },
-    {
-        "id": "6839c6e2c4cf2",
-        "name": "Snack-vert",
-        "filename": "Snack-vert.jpg",
-        "url": "/uploads/Snack-vert.jpg",
-        "alt": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "description": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "type": "jpg",
-        "size": 484520,
-        "date": "2025-05-30 14:55:30"
-    },
-    {
         "id": "6839c6e2f3f27",
-        "name": "Snack",
+        "name": "Snack 2",
         "filename": "Snack.jpg",
         "url": "/uploads/Snack.jpg",
         "alt": {
             "en": "",
-            "fr": "",
+            "fr": "Le bouton \"Enregistrer\"",
             "es": ""
         },
         "description": {
             "en": "",
-            "fr": "",
+            "fr": "Le bouton \"Enregistrer\"",
             "es": ""
         },
         "type": "jpg",
@@ -72,8 +34,8 @@
             "es": ""
         },
         "type": "webp",
-        "size": 245568,
-        "date": "2025-05-30 14:55:31"
+        "size": 207204,
+        "date": "2025-06-03 10:12:16"
     },
     {
         "id": "683eb27723736",
@@ -83,35 +45,18 @@
         "alt": {
             "en": "",
             "fr": "",
-            "es": ""
+            "es": "working-with-multilingual-content",
+            "de": ""
         },
         "description": {
             "en": "",
-            "fr": "",
-            "es": ""
+            "fr": "CP0-V0-MD.png",
+            "es": "",
+            "de": ""
         },
         "type": "png",
         "size": 838067,
         "date": "2025-06-03 08:29:43"
-    },
-    {
-        "id": "683eb72f800f4",
-        "name": "Ziprol-Plus-Maxi-V2-MD",
-        "filename": "Ziprol-Plus-Maxi-V2-MD.gif",
-        "url": "/uploads/Ziprol-Plus-Maxi-V2-MD.gif",
-        "alt": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "description": {
-            "en": "",
-            "fr": "",
-            "es": ""
-        },
-        "type": "gif",
-        "size": 642626,
-        "date": "2025-06-03 08:49:51"
     },
     {
         "id": "683eba58b75e2",
@@ -133,10 +78,10 @@
         "date": "2025-06-03 09:03:20"
     },
     {
-        "id": "683eba72df6de",
-        "name": "boisson-buccale",
-        "filename": "boisson-buccale.webp",
-        "url": "/uploads/boisson-buccale.webp",
+        "id": "683ec9da8e138",
+        "name": "Snack-rouge",
+        "filename": "Snack-rouge.jpg",
+        "url": "/uploads/Snack-rouge.jpg",
         "alt": {
             "en": "",
             "fr": "",
@@ -147,15 +92,15 @@
             "fr": "",
             "es": ""
         },
-        "type": "webp",
-        "size": 69310,
-        "date": "2025-06-03 09:03:46"
+        "type": "jpg",
+        "size": 253127,
+        "date": "2025-06-03 10:09:30"
     },
     {
-        "id": "683eba74a9d52",
-        "name": "bouteille-d-eau-blanche",
-        "filename": "bouteille-d-eau-blanche.webp",
-        "url": "/uploads/bouteille-d-eau-blanche.webp",
+        "id": "683ec9db4a748",
+        "name": "Snack-bleu",
+        "filename": "Snack-bleu.jpg",
+        "url": "/uploads/Snack-bleu.jpg",
         "alt": {
             "en": "",
             "fr": "",
@@ -166,15 +111,15 @@
             "fr": "",
             "es": ""
         },
-        "type": "webp",
-        "size": 51660,
-        "date": "2025-06-03 09:03:48"
+        "type": "jpg",
+        "size": 109107,
+        "date": "2025-06-03 10:09:31"
     },
     {
-        "id": "683ec1df8e5d7",
-        "name": "Ziprol-Plus-Maxi-V2-MD_new.gif",
-        "filename": "Ziprol-Plus-Maxi-V2-MD_new.gif.gif",
-        "url": "/uploads/Ziprol-Plus-Maxi-V2-MD_new.gif.gif",
+        "id": "683ec9dbc614e",
+        "name": "Snack-vert",
+        "filename": "Snack-vert.jpg",
+        "url": "/uploads/Snack-vert.jpg",
         "alt": {
             "en": "",
             "fr": "",
@@ -185,8 +130,8 @@
             "fr": "",
             "es": ""
         },
-        "type": "gif",
-        "size": 642626,
-        "date": "2025-06-03 09:35:27"
+        "type": "jpg",
+        "size": 484520,
+        "date": "2025-06-03 10:09:31"
     }
 ]
