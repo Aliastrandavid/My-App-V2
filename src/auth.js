@@ -1,14 +1,10 @@
-{
-    "users": [
-        {
-            "id": 1,
-            "username": "david",
-            "name": "TRAN David",
-            "email": "aliastrandavid@gmail.com",
-            "role": "admin",
-            "password": "$2y$10$PVKG5SJcWvP4duB78m6Pm.1jF\/YsHInXOZpDqUqXXyAt.OBPM0j.S",
-            "created_at": "2025-06-13T06:09:17Z",
-            "updated_at": "2025-06-13T06:09:45Z"
-        }
-    ]
+const fs = require('fs');
+const path = require('path');
+
+const usersData = JSON.parse(fs.readFileSync('storage/users.json', 'utf8')); // Mauvais : lu une seule fois
+
+function login(username, password) {
+    const user = usersData.users.find(u => u.username === username);
+    // ...vérification du mot de passe...
+    // ...retourne l'utilisateur ou une erreur...
 }
