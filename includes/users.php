@@ -25,7 +25,7 @@ function get_all_users() {
     }
 
     // Create default admin user if no users exist
-    $admin_user = [
+   /*  $admin_user = [
         'id' => 1,
         'username' => 'admin',
         'email' => 'admin@example.com',
@@ -37,7 +37,7 @@ function get_all_users() {
         'created_at' => date('Y-m-d\TH:i:s\Z'),
         'updated_at' => date('Y-m-d\TH:i:s\Z'),
         'last_login' => null
-    ];
+    ]; */
 
     $users = [$admin_user];
     write_json_file($users_file, ['users' => $users]);
