@@ -25,19 +25,19 @@ function get_all_users() {
     }
 
     // Create default admin user if no users exist
-   /*  $admin_user = [
+    $admin_user = [
         'id' => 1,
-        'username' => 'admin',
-        'email' => 'admin@example.com',
-        'password' => password_hash('admin', PASSWORD_DEFAULT),
-        'first_name' => 'Admin',
-        'last_name' => 'User',
+        'username' => 'David',
+        'email' => 'aliastrandavid@gmail.com',
+        'password' => password_hash('aliasdesign', PASSWORD_DEFAULT),
+        'first_name' => 'David',
+        'last_name' => 'TRAN',
         'role' => 'admin',
         'status' => 'active',
         'created_at' => date('Y-m-d\TH:i:s\Z'),
         'updated_at' => date('Y-m-d\TH:i:s\Z'),
         'last_login' => null
-    ]; */
+    ];
 
     $users = [$admin_user];
     write_json_file($users_file, ['users' => $users]);

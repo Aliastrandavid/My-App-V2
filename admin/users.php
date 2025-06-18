@@ -71,9 +71,18 @@ $total_pages = ceil($total_users / $per_page);
 $roles = get_available_roles();
 
 // Include header
-include 'includes/header.php';
+/* include 'includes/header.php'; */
 ?>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxonomies - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin-style.css">
+</head>
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
