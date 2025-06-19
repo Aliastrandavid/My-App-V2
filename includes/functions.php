@@ -595,3 +595,16 @@ function get_versioned_filename($filename, $suffix) {
     $base = preg_replace('/(_[tmd])?\.' . preg_quote($ext, '/') . '$/i', '', $filename);
     return $base . '_' . $suffix . '.' . $ext;
 }
+
+function get_all_properties() {
+    $file = __DIR__ . '/../admin/attached_assets/properties.json';
+    if (!file_exists($file)) {
+        return [];
+    }
+    $json = file_get_contents($file);
+    $data = json_decode($json, true);
+    if (isset($data['properties']) && is_array($data['properties'])) {
+        return $data['properties'];
+    }
+    return [];
+}

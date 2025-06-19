@@ -24,8 +24,8 @@ $posts_data = [];
 $post_counts = [];
 $taxonomy_counts = [];
 
-// Read posts JSON file
-$posts_file = '../storage/posts.json';
+// Read blog JSON file
+$posts_file = '../storage/blog.json';
 if (file_exists($posts_file)) {
     $posts_data = read_json_file($posts_file);
 
@@ -52,6 +52,16 @@ if (file_exists($taxonomies_file) && file_exists($terms_file)) {
 $total_posts = array_sum($post_counts);
 $total_taxonomies = count($taxonomies ?? []);
 $total_terms = array_sum($taxonomy_counts);
+
+// Récupérer les propriétés
+$properties = get_all_properties();
+$total_properties = count($properties);
+
+// Trier par date de création décroissante (si possible)
+usort($properties, function($a, $b) {
+    return strtotime($b['created_at'] ?? '') <=> strtotime($a['created_at'] ?? '');
+});
+$recent_properties = array_slice($properties, 0, 5);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,207 +85,309 @@ $total_terms = array_sum($taxonomy_counts);
                     <h1 class="h2">Dashboard</h1>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Content</h5>
-                                <p class="card-text display-4"><?php echo $total_posts; ?></p>
-                            </div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="posts.php">View Details</a>
-                                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Post Types</h5>
-                                <p class="card-text display-4"><?php echo count($post_types); ?></p>
-                            </div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="post-types.php">View Details</a>
-                                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div class="container mt-4">
+                    <div class="row">
+                        <!-- Card Total Properties -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-danger h-100">
+                                <div class="card-header">
+                                    Total Properties
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo $total_properties; ?></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-dark mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Taxonomies</h5>
-                                <p class="card-text display-4"><?php echo $total_taxonomies; ?></p>
-                            </div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-dark stretched-link" href="taxonomies.php">View Details</a>
-                                <div class="small text-dark"><i class="bi bi-chevron-right"></i></div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-primary h-100">
+                                <div class="card-header">
+                                    Total Blog Posts
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo $total_posts; ?></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Terms</h5>
-                                <p class="card-text display-4"><?php echo $total_terms; ?></p>
-                            </div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="taxonomies.php">View Details</a>
-                                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-success h-100">
+                                <div class="card-header">
+                                    Post Types
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo count($post_types); ?></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="bi bi-table me-1"></i>
-                                Content by Type
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-dark bg-warning h-100">
+                                <div class="card-header">
+                                    Taxonomies
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo $total_taxonomies; ?></p>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Post Type</th>
-                                                <th>Count</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($post_types as $slug => $post_type): ?>
-                                                <tr>
-                                                    <td>
-                                                        <i class="bi <?php echo $post_type['icon'] ?? 'bi-file-earmark'; ?>"></i>
-                                                        <?php echo htmlspecialchars($post_type['name_' . DEFAULT_LANGUAGE] ?? $post_type['name'] ?? ''); ?>
-                                                    </td>
-                                                    <td><?php echo $post_counts[$slug] ?? 0; ?></td>
-                                                    <td>
-                                                        <a href="posts.php?type=<?php echo urlencode($slug); ?>" class="btn btn-sm btn-outline-primary">View</a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
+                        </div>
+
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-info h-100">
+                                <div class="card-header">
+                                    Terms
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo $total_terms; ?></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="bi bi-diagram-3 me-1"></i>
-                                Taxonomies
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Taxonomy</th>
-                                                <th>Terms</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if (!empty($taxonomies)): ?>
-                                                <?php foreach ($taxonomies as $slug => $taxonomy): ?>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="bi bi-table me-1"></i>
+                                    Content by Type
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Post Type</th>
+                                                    <th>Count</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($post_types as $slug => $post_type): ?>
                                                     <tr>
-                                                        <td><?php echo htmlspecialchars($taxonomy['name_' . DEFAULT_LANGUAGE] ?? $taxonomy['name'] ?? ''); ?></td>
-                                                        <td><?php echo $taxonomy_counts[$slug] ?? 0; ?></td>
                                                         <td>
-                                                            <a href="taxonomy-edit.php?slug=<?php echo urlencode($slug); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                            <i class="bi <?php echo $post_type['icon'] ?? 'bi-file-earmark'; ?>"></i>
+                                                            <?php echo htmlspecialchars($post_type['name_' . DEFAULT_LANGUAGE] ?? $post_type['name'] ?? ''); ?>
+                                                        </td>
+                                                        <td><?php echo $post_counts[$slug] ?? 0; ?></td>
+                                                        <td>
+                                                            <a href="posts.php?type=<?php echo urlencode($slug); ?>" class="btn btn-sm btn-outline-primary">View</a>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
-                                            <?php else: ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="bi bi-diagram-3 me-1"></i>
+                                    Taxonomies
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
                                                 <tr>
-                                                    <td colspan="3" class="text-center">No taxonomies found</td>
+                                                    <th>Taxonomy</th>
+                                                    <th>Terms</th>
+                                                    <th>Actions</th>
                                                 </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (!empty($taxonomies)): ?>
+                                                    <?php foreach ($taxonomies as $slug => $taxonomy): ?>
+                                                        <tr>
+                                                            <td><?php echo htmlspecialchars($taxonomy['name_' . DEFAULT_LANGUAGE] ?? $taxonomy['name'] ?? ''); ?></td>
+                                                            <td><?php echo $taxonomy_counts[$slug] ?? 0; ?></td>
+                                                            <td>
+                                                                <a href="taxonomy-edit.php?slug=<?php echo urlencode($slug); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">No taxonomies found</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="bi bi-clock-history me-1"></i>
-                        Recent Content
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Type</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    $recent_posts = [];
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Recent Blog Posts
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $recent_posts = [];
 
-                                    // Combine all post types into a single array for sorting
-                                    foreach ($posts_data as $type => $posts) {
-                                        foreach ($posts as $post) {
-                                            $post['post_type'] = $type;
-                                            $recent_posts[] = $post;
+                                        // Combine all post types into a single array for sorting
+                                        foreach ($posts_data as $type => $posts) {
+                                            foreach ($posts as $post) {
+                                                $post['post_type'] = $type;
+                                                $recent_posts[] = $post;
+                                            }
                                         }
-                                    }
 
-                                    // Sort by updated_at date (descending)
-                                    usort($recent_posts, function($a, $b) {
-                                        return strtotime($b['updated_at'] ?? 0) - strtotime($a['updated_at'] ?? 0);
-                                    });
+                                        // Sort by updated_at date (descending)
+                                        usort($recent_posts, function($a, $b) {
+                                            return strtotime($b['updated_at'] ?? 0) - strtotime($a['updated_at'] ?? 0);
+                                        });
 
-                                    // Take only the 5 most recent posts
-                                    $recent_posts = array_slice($recent_posts, 0, 5);
+                                        // Take only the 5 most recent posts
+                                        $recent_posts = array_slice($recent_posts, 0, 5);
 
-                                    if (!empty($recent_posts)):
-                                        foreach ($recent_posts as $post):
-                                            $post_type = $post['post_type'] ?? '';
-                                            $post_type_info = $post_types[$post_type] ?? ['name' => ucfirst($post_type)];
-                                            $updated_at = !empty($post['updated_at']) ? date('M j, Y', strtotime($post['updated_at'])) : '';
-                                    ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($post['title_en'] ?? ''); ?></td>
-                                            <td><?php echo htmlspecialchars($post_type_info['name_' . DEFAULT_LANGUAGE] ?? $post_type_info['name'] ?? ''); ?></td>
-                                            <td><?php echo $updated_at; ?></td>
-                                            <td>
-                                                <?php if (($post['status'] ?? '') === 'published'): ?>
-                                                    <span class="badge bg-success">Published</span>
-                                                <?php elseif (($post['status'] ?? '') === 'draft'): ?>
-                                                    <span class="badge bg-warning text-dark">Draft</span>
+                                        if (!empty($recent_posts)):
+                                            foreach ($recent_posts as $post):
+                                                $post_type = $post['post_type'] ?? '';
+                                                $post_type_info = $post_types[$post_type] ?? ['name' => ucfirst($post_type)];
+                                                $updated_at = !empty($post['updated_at']) ? date('M j, Y', strtotime($post['updated_at'])) : '';
+                                        ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($post['title_en'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($post_type_info['name_' . DEFAULT_LANGUAGE] ?? $post_type_info['name'] ?? ''); ?></td>
+                                                <td><?php echo $updated_at; ?></td>
+                                                <td>
+                                                    <?php if (($post['status'] ?? '') === 'published'): ?>
+                                                        <span class="badge bg-success">Published</span>
+                                                    <?php elseif (($post['status'] ?? '') === 'draft'): ?>
+                                                        <span class="badge bg-warning text-dark">Draft</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-secondary"><?php echo ucfirst($post['status'] ?? 'Unknown'); ?></span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <a href="post-edit.php?type=<?php echo urlencode($post_type); ?>&id=<?php echo urlencode($post['id'] ?? ''); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                </td>
+                                            </tr>
+                                        <?php 
+                                            endforeach;
+                                        else:
+                                        ?>
+                                            <tr>
+                                                <td colspan="5" class="text-center">No content found</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tableau des propriétés récentes -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="bi bi-house"></i>
+                                    Recent Properties
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Titre</th>
+                                                    <th>Type</th>
+                                                    <th>Créé le</th>
+                                                    <th>Prix</th>
+                                                    <th>Voir</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (!empty($recent_properties)): ?>
+                                                    <?php foreach ($recent_properties as $property): ?>
+                                                        <tr>
+                                                            <!-- Titre (remplace Adresse) -->
+                                                            <td>
+                                                                <a href="property-details.php?id=<?php echo urlencode($property['id']); ?>">
+                                                                    <?php
+                                                                    $displayTitle = '';
+                                                                    if (!empty($property['comments']) && is_array($property['comments'])) {
+                                                                        foreach ($property['comments'] as $comment) {
+                                                                            if (!empty($comment['title'])) {
+                                                                                $displayTitle = $comment['title'];
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    if ($displayTitle !== '') {
+                                                                        echo htmlspecialchars($displayTitle);
+                                                                    } elseif (!empty($property['title'])) {
+                                                                        echo htmlspecialchars($property['title']);
+                                                                    } elseif (!empty($property['address'])) {
+                                                                        echo htmlspecialchars($property['address']);
+                                                                    } else {
+                                                                        echo '';
+                                                                    }
+                                                                    ?>
+                                                                </a>
+                                                            </td>
+                                                            <!-- Type (label) -->
+                                                            <td>
+                                                                <?php 
+                                                                require_once __DIR__ . '/includes/functions.php'; // S'assure que la fonction est bien chargée
+                                                                $typeId = null;
+                                                                if (isset($property['type'])) {
+                                                                    $typeId = is_numeric($property['type']) ? (int)$property['type'] : null;
+                                                                }
+                                                                $label = ($typeId !== null) ? getPropertyTypeLabel($typeId) : '';
+                                                                echo htmlspecialchars($label);
+                                                                ?>
+                                                            </td>
+                                                            <!-- Créé le -->
+                                                            <td>
+                                                                <?php echo htmlspecialchars($property['created_at'] ?? ''); ?>
+                                                            </td>
+                                                            <!-- Prix (formaté euros) -->
+                                                            <td>
+                                                                <?php
+                                                                if (isset($property['price']['value'])) {
+                                                                    echo number_format($property['price']['value'], 0, ',', ' ') . ' €';
+                                                                } elseif (isset($property['price'])) {
+                                                                    echo number_format($property['price'], 0, ',', ' ') . ' €';
+                                                                } else {
+                                                                    echo '-';
+                                                                }
+                                                                ?>
+                                                            </td>
+                                                            <!-- Lien admin -->
+                                                            <td>
+                                                                <a href="property-details.php?id=<?php echo urlencode($property['id']); ?>" class="btn btn-sm btn-outline-primary">Voir</a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
                                                 <?php else: ?>
-                                                    <span class="badge bg-secondary"><?php echo ucfirst($post['status'] ?? 'Unknown'); ?></span>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center">Aucune propriété trouvée.</td>
+                                                    </tr>
                                                 <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <a href="post-edit.php?type=<?php echo urlencode($post_type); ?>&id=<?php echo urlencode($post['id'] ?? ''); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            </td>
-                                        </tr>
-                                    <?php 
-                                        endforeach;
-                                    else:
-                                    ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center">No content found</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
