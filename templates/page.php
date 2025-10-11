@@ -71,7 +71,7 @@ include __DIR__ . '/includes/header.php';
     <div class="container my-5">
         <div class="row">
             <div class="col-lg-8 mx-auto">
-                <h1 class="fw-bolder mb-4"><?php echo htmlspecialchars($title); ?></h1>
+                <!-- <h1 class="fw-bolder mb-4"><?php echo htmlspecialchars($title); ?></h1> -->
                 
                 <div class="page-content">
                     <?php echo $page_content; ?>
