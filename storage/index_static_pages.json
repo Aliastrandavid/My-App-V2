@@ -2,6 +2,10 @@
     "pages": [
         {
             "id": "about",
+            "order": 2,
+            "title_fr": "À propos de nous",
+            "title_en": "About Us",
+            "title_es": "Sobre nosotros",
             "meta_title_en": "About Us",
             "meta_title_fr": "À propos de nous",
             "slug_en": "about",
@@ -15,7 +19,11 @@
         },
         {
             "id": "contact",
-            "meta_title_en": "Contact Us",
+            "order": 4,
+            "title_fr": "Contactez-nous",
+            "title_en": "Contact Us",
+            "title_es": "Contáctenos",
+            "meta_title_en": "Contact Us"   ,
             "meta_title_fr": "Contactez-nous",
             "slug_en": "contact",
             "slug_fr": "contact",
@@ -28,6 +36,10 @@
         },
         {
             "id": "home",
+            "order": 1,
+            "title_fr": "Accueil",
+            "title_en": "Home",
+            "title_es": "Inicio",
             "meta_title_en": "Home",
             "meta_title_fr": "Accueil",
             "slug_en": "home",
@@ -41,6 +53,10 @@
         },
         {
             "id": "blog",
+            "order": 3,
+            "title_fr": "Blog",
+            "title_en": "Blog",
+            "title_es": "Blog",
             "meta_title_en": "Blog",
             "meta_title_fr": "Blog",
             "slug_en": "blog",
