@@ -1,9 +1,6 @@
 <!-- Contenu spécifique de la page contact -->
     <h1>Contact Us</h1>
-    <form>
-        <!-- Form fields ici -->
-    </form>
-            </div>
+        </div>
             <div class="contact-form">
                 <form>
                     <div class="mb-3">
