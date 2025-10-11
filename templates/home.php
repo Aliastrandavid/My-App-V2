@@ -6,10 +6,10 @@ $slug = 'home';
 $lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
 $page = null;
 $pages = [];
-$page_file = __DIR__ . '/../storage/page.json';
+$page_file = __DIR__ . '/../storage/index_static_pages.json';
 if (file_exists($page_file)) {
     $json = json_decode(file_get_contents($page_file), true);
-    $pages = $json['posts'] ?? [];
+    $pages = $json['pages'] ?? [];
 }
 foreach ($pages as $p) {
     if (($p['slug_' . $lang] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
@@ -19,20 +19,14 @@ foreach ($pages as $p) {
 }
 if (!$page) {
     $page = [
-        'title_en' => 'Home',
-        'title_fr' => 'Accueil',
-        'content_en' => '<h1>Welcome to Our Website</h1><p>This is a flat headless CMS built with PHP and JSON storage.</p>',
-        'content_fr' => '<h1>Bienvenue sur notre site Web</h1><p>Ceci est un CMS headless à plat construit avec PHP et stockage JSON.</p>',
-        'meta_title_en' => '',
-        'meta_title_fr' => '',
-        'meta_description_en' => '',
-        'meta_description_fr' => ''
+        'meta_title_en' => 'Home',
+        'meta_title_fr' => 'Accueil',
+        'meta_description_en' => '<h1>Welcome to Our Website</h1><p>This is a flat headless CMS built with PHP and JSON storage.</p>',
+        'meta_description_fr' => '<h1>Bienvenue sur notre site Web</h1><p>Ceci est un CMS headless à plat construit avec PHP et stockage JSON.</p>'
     ];
 }
-$title = $page['title_' . $lang] ?? $page['title_en'];
-$content = $page['content_' . $lang] ?? $page['content_en'];
-$meta_title = $page['meta_title_' . $lang] ?? $title;
-$meta_description = $page['meta_description_' . $lang] ?? '';
+$meta_title = $page['meta_title_' . $lang] ?? $page['meta_title_en'];
+$meta_description = $page['meta_description_' . $lang] ?? $page['meta_description_en'];
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $lang; ?>">

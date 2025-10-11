@@ -7,12 +7,12 @@ $slug = 'about';
 $lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
 $page = null;
 
-// Recherche la page dans page.json
+// Recherche la page dans index_static_pages.json
 $pages = [];
-$page_file = __DIR__ . '/../storage/page.json';
+$page_file = __DIR__ . '/../storage/index_static_pages.json';
 if (file_exists($page_file)) {
     $json = json_decode(file_get_contents($page_file), true);
-    $pages = $json['posts'] ?? [];
+    $pages = $json['pages'] ?? [];
 }
 foreach ($pages as $p) {
     if (($p['slug_' . $lang] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
@@ -23,20 +23,14 @@ foreach ($pages as $p) {
 // Fallback si non trouvé
 if (!$page) {
     $page = [
-        'title_en' => 'About Us',
-        'title_fr' => 'À propos de nous',
-        'content_en' => '<h1>About Our Company</h1><p>Welcome to our company page.</p>',
-        'content_fr' => '<h1>À propos de notre entreprise</h1><p>Bienvenue sur la page de notre entreprise.</p>',
-        'meta_title_en' => '',
-        'meta_title_fr' => '',
-        'meta_description_en' => '',
-        'meta_description_fr' => ''
+        'meta_title_en' => 'About Us',
+        'meta_title_fr' => 'À propos de nous',
+        'meta_description_en' => '<h1>About Our Company</h1><p>Welcome to our company page.</p>',
+        'meta_description_fr' => '<h1>À propos de notre entreprise</h1><p>Bienvenue sur la page de notre entreprise.</p>'
     ];
 }
-$title = $page['title_' . $lang] ?? $page['title_en'];
-$content = $page['content_' . $lang] ?? $page['content_en'];
-$meta_title = $page['meta_title_' . $lang] ?? $title;
-$meta_description = $page['meta_description_' . $lang] ?? '';
+$meta_title = $page['meta_title_' . $lang] ?? $page['meta_title_en'];
+$meta_description = $page['meta_description_' . $lang] ?? $page['meta_description_en'];
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $lang; ?>">
