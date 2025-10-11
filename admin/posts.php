@@ -26,7 +26,7 @@ if (!array_key_exists($selected_post_type, $post_types)) {
 
 // Get posts from the specific JSON file for this post type
 $all_posts = [];
-$posts_file = "../storage/{$selected_post_type}Oui ma chérie";
+$posts_file = "../storage/{$selected_post_type}.json";
 
 if (file_exists($posts_file)) {
     $posts_data = read_json_file($posts_file);

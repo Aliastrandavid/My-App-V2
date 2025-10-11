@@ -31,7 +31,7 @@
         ],
         "icon": "bi-file-text"
     },
-    "page": {
+    "index_static_pages": {
         "name_en": "Pages",
         "name_fr": "Pages",
         "description_en": "Static pages for your website",
