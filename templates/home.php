@@ -1,10 +1,4 @@
 <!-- Contenu spécifique de la page d'accueil -->
-<div class="hero-section">
-    <h1><?php echo htmlspecialchars($title ?? ''); ?></h1>
-    <div class="hero-content">
-        <?php echo $content ?? ''; ?>
-    </div>
-</div>
 <!-- Section des derniers posts -->
 <?php
 $latest_posts = get_posts('blog', [
