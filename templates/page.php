@@ -5,10 +5,22 @@
 
 // Get page data if not already set in index.php
 if (!isset($static_page)) {
-    $static_page = get_static_page_by_slug($slug, CURRENT_LANG);
+    // Lecture directe du JSON centralisé
+    $pages = [];
+    $page_file = __DIR__ . '/../storage/index_static_pages.json';
+    if (file_exists($page_file)) {
+        $json = json_decode(file_get_contents($page_file), true);
+        $pages = $json['pages'] ?? [];
+    }
+    foreach ($pages as $p) {
+        if (($p['slug_' . CURRENT_LANG] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
+            $static_page = $p;
+            break;
+        }
+    }
 }
 
-// 404 if page not found or not published
+// 404 si page non trouvée ou non publiée
 if (!$static_page || $static_page['status'] !== 'published') {
     header("HTTP/1.0 404 Not Found");
     echo "<h1>404 - Page Not Found</h1>";
@@ -17,40 +29,13 @@ if (!$static_page || $static_page['status'] !== 'published') {
     exit;
 }
 
-// Get site settings
+// Récupère les métadonnées
 $site_title = get_general_settings()['site_title'] ?? 'Flat Headless CMS';
+$meta_title = $static_page['meta_title_' . CURRENT_LANG] ?? $static_page['meta_title_en'];
+$meta_description = $static_page['meta_description_' . CURRENT_LANG] ?? $static_page['meta_description_en'];
 
-// Get page title and content in current language or default
-if (!isset($title)) {
-    $title_field = 'title_' . CURRENT_LANG;
-    $title = isset($static_page[$title_field]) && !empty($static_page[$title_field]) 
-        ? $static_page[$title_field] 
-        : $static_page['title_' . DEFAULT_LANGUAGE];
-}
-
-if (!isset($content)) {
-    $content_field = 'content_' . CURRENT_LANG;
-    $content = isset($static_page[$content_field]) && !empty($static_page[$content_field]) 
-        ? $static_page[$content_field] 
-        : $static_page['content_' . DEFAULT_LANGUAGE];
-}
-
-// Handle template if specified and not already loaded
-$page_content = $content; // Default to using the content directly
-
-if (isset($static_page['template']) && strpos($static_page['template'], '.html') !== false) {
-    $template_file = TEMPLATES_PATH . '/' . $static_page['template'];
-    if (file_exists($template_file)) {
-        // Load HTML template and replace placeholders
-        $template_content = file_get_contents($template_file);
-        
-        // Replace placeholders in template
-        $template_content = str_replace('{{title}}', $title, $template_content);
-        $template_content = str_replace('{{content}}', $content, $template_content);
-        
-        $page_content = $template_content;
-    }
-}
+// Inclusion du header
+include __DIR__ . '/includes/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo CURRENT_LANG; ?>">

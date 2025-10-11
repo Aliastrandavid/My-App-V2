@@ -1,65 +1,13 @@
-<?php
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../includes/static-pages.php';
-
-// Détecte le slug et la langue
-$slug = 'about';
-$lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
-$page = null;
-
-// Recherche la page dans index_static_pages.json
-$pages = [];
-$page_file = __DIR__ . '/../storage/index_static_pages.json';
-if (file_exists($page_file)) {
-    $json = json_decode(file_get_contents($page_file), true);
-    $pages = $json['pages'] ?? [];
-}
-foreach ($pages as $p) {
-    if (($p['slug_' . $lang] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
-        $page = $p;
-        break;
-    }
-}
-// Fallback si non trouvé
-if (!$page) {
-    $page = [
-        'meta_title_en' => 'About Us',
-        'meta_title_fr' => 'À propos de nous',
-        'meta_description_en' => '<h1>About Our Company</h1><p>Welcome to our company page.</p>',
-        'meta_description_fr' => '<h1>À propos de notre entreprise</h1><p>Bienvenue sur la page de notre entreprise.</p>'
-    ];
-}
-$meta_title = $page['meta_title_' . $lang] ?? $page['meta_title_en'];
-$meta_description = $page['meta_description_' . $lang] ?? $page['meta_description_en'];
-?>
-<!DOCTYPE html>
-<html lang="<?php echo $lang; ?>">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($meta_title); ?></title>
-    <meta name="description" content="<?php echo htmlspecialchars($meta_description); ?>">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo get_site_url(); ?>/css/style.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/header.php'; ?>
-    <div class="container">
-        <div class="about-page">
-            <div class="about-content">
-                <?php echo $content; ?>
-            </div>
-            <div class="about-sidebar">
-                <h3>Company Info</h3>
-                <p>Founded in 2023</p>
-                <p>Experts in headless CMS solutions</p>
-                <p>Based in Digital Land</p>
-            </div>
+<div class="container">
+    <div class="about-page">
+        <div class="about-content">
+            <?php echo $meta_description; ?>
+        </div>
+        <div class="about-sidebar">
+            <h3>Company Info</h3>
+            <p>Founded in 2023</p>
+            <p>Experts in headless CMS solutions</p>
+            <p>Based in Digital Land</p>
         </div>
     </div>
-    <?php include __DIR__ . '/includes/footer.php'; ?>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
