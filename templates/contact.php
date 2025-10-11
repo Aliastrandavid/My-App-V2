@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/static-pages.php';
 
-$slug = 'home';
+$slug = 'contact';
 $lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
 $page = null;
 $pages = [];
@@ -19,10 +19,10 @@ foreach ($pages as $p) {
 }
 if (!$page) {
     $page = [
-        'title_en' => 'Home',
-        'title_fr' => 'Accueil',
-        'content_en' => '<h1>Welcome to Our Website</h1><p>This is a flat headless CMS built with PHP and JSON storage.</p>',
-        'content_fr' => '<h1>Bienvenue sur notre site Web</h1><p>Ceci est un CMS headless à plat construit avec PHP et stockage JSON.</p>',
+        'title_en' => 'Contact',
+        'title_fr' => 'Contact',
+        'content_en' => '<h1>Contact Us</h1><p>We\'d love to hear from you!</p>',
+        'content_fr' => '<h1>Contactez-nous</h1><p>Nous aimerions avoir de vos nouvelles !</p>',
         'meta_title_en' => '',
         'meta_title_fr' => '',
         'meta_description_en' => '',
@@ -44,14 +44,27 @@ $meta_description = $page['meta_description_' . $lang] ?? '';
 </head>
 <body>
     <div class="container">
-        <div class="home-page">
-            <div class="hero-section">
-                <h1><?php echo htmlspecialchars($title); ?></h1>
-                <div class="hero-content">
-                    <?php echo $content; ?>
-                </div>
+        <div class="contact-page">
+            <div class="contact-content">
+                <?php echo $content; ?>
             </div>
-            <!-- Features section ici si besoin -->
+            <div class="contact-form">
+                <form>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Your Name</label>
+                        <input type="text" class="form-control" id="name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="5"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
         </div>
     </div>
 </body>

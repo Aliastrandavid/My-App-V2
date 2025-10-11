@@ -95,31 +95,20 @@ if (!empty($path_parts[0])) {
 if ($is_post) {
     include 'templates/post.php';
 } else {
-    // First check if a PHP template exists
+    // Priorité aux nouveaux templates PHP pour les pages statiques
     $template_file = 'templates/' . $page . '.php';
-    
     if (file_exists($template_file)) {
         include $template_file;
     } else {
-        // Then check if the static page has a template
+        // Fallback : page générique
         $static_page = get_static_page_by_slug($slug, CURRENT_LANG) ?: get_static_page('home');
-        
-        if ($static_page && isset($static_page['template'])) {
-            $html_template = 'templates/' . $static_page['template'];
-            
-            if (file_exists($html_template)) {
-                // Extract page data to local variables
-                $title = $static_page['title_' . CURRENT_LANG] ?? $static_page['title_en'];
-                $content = $static_page['content_' . CURRENT_LANG] ?? $static_page['content_en'];
-                
-                include 'templates/page.php';
-            } else {
-                // 404 page
-                header("HTTP/1.0 404 Not Found");
-                echo "<h1>404 - Page Not Found</h1>";
-                echo "<p>The template file for this page does not exist.</p>";
-                echo "<p><a href='/'>Go to homepage</a></p>";
-            }
+        if ($static_page) {
+            // Variables dynamiques pour page.php
+            $title = $static_page['title_' . CURRENT_LANG] ?? $static_page['title_en'];
+            $content = $static_page['content_' . CURRENT_LANG] ?? $static_page['content_en'];
+            $meta_title = $static_page['meta_title_' . CURRENT_LANG] ?? $title;
+            $meta_description = $static_page['meta_description_' . CURRENT_LANG] ?? '';
+            include 'templates/page.php';
         } else {
             // 404 page
             header("HTTP/1.0 404 Not Found");

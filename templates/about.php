@@ -2,9 +2,12 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/static-pages.php';
 
-$slug = 'home';
+// Détecte le slug et la langue
+$slug = 'about';
 $lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
 $page = null;
+
+// Recherche la page dans page.json
 $pages = [];
 $page_file = __DIR__ . '/../storage/page.json';
 if (file_exists($page_file)) {
@@ -17,12 +20,13 @@ foreach ($pages as $p) {
         break;
     }
 }
+// Fallback si non trouvé
 if (!$page) {
     $page = [
-        'title_en' => 'Home',
-        'title_fr' => 'Accueil',
-        'content_en' => '<h1>Welcome to Our Website</h1><p>This is a flat headless CMS built with PHP and JSON storage.</p>',
-        'content_fr' => '<h1>Bienvenue sur notre site Web</h1><p>Ceci est un CMS headless à plat construit avec PHP et stockage JSON.</p>',
+        'title_en' => 'About Us',
+        'title_fr' => 'À propos de nous',
+        'content_en' => '<h1>About Our Company</h1><p>Welcome to our company page.</p>',
+        'content_fr' => '<h1>À propos de notre entreprise</h1><p>Bienvenue sur la page de notre entreprise.</p>',
         'meta_title_en' => '',
         'meta_title_fr' => '',
         'meta_description_en' => '',
@@ -44,14 +48,16 @@ $meta_description = $page['meta_description_' . $lang] ?? '';
 </head>
 <body>
     <div class="container">
-        <div class="home-page">
-            <div class="hero-section">
-                <h1><?php echo htmlspecialchars($title); ?></h1>
-                <div class="hero-content">
-                    <?php echo $content; ?>
-                </div>
+        <div class="about-page">
+            <div class="about-content">
+                <?php echo $content; ?>
             </div>
-            <!-- Features section ici si besoin -->
+            <div class="about-sidebar">
+                <h3>Company Info</h3>
+                <p>Founded in 2023</p>
+                <p>Experts in headless CMS solutions</p>
+                <p>Based in Digital Land</p>
+            </div>
         </div>
     </div>
 </body>
