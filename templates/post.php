@@ -105,21 +105,7 @@ $tags = isset($post_data['tax_tag']) ? $post_data['tax_tag'] : [];
     <link rel="stylesheet" href="<?php echo get_site_url(); ?>/css/style.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="<?php echo get_site_url() . '/' . CURRENT_LANG; ?>"><?php echo htmlspecialchars($site_title); ?></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <?php echo generate_navigation_menu(CURRENT_LANG); ?>
-                <div class="ms-auto">
-                    <?php echo create_language_switcher('dropdown'); ?>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <!-- Article -->
     <div class="container my-5">
@@ -202,14 +188,7 @@ $tags = isset($post_data['tax_tag']) ? $post_data['tax_tag'] : [];
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
-        <div class="container">
-            <p class="text-center text-muted mb-0">
-                &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_title); ?>
-            </p>
-        </div>
-    </footer>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

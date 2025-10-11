@@ -16,14 +16,7 @@ $posts = get_posts('blog', ['status' => 'published'], -1);
     <link rel="stylesheet" href="<?php echo get_site_url(); ?>/css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="<?php echo get_site_url(); ?>"><?php echo htmlspecialchars($site_title); ?></a>
-            <div class="ms-auto">
-                <?php echo create_language_switcher('dropdown'); ?>
-            </div>
-        </div>
-    </nav>
+    <?php include __DIR__ . '/includes/header.php'; ?>
     <div class="container my-5">
         <h1>Blog Posts</h1>
         <div class="row">
@@ -49,6 +42,8 @@ $posts = get_posts('blog', ['status' => 'published'], -1);
             <?php endif; ?>
         </div>
     </div>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -45,8 +45,12 @@ $meta_description = $page['meta_description_' . $lang] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($meta_title); ?></title>
     <meta name="description" content="<?php echo htmlspecialchars($meta_description); ?>">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo get_site_url(); ?>/css/style.css">
 </head>
 <body>
+    <?php include __DIR__ . '/includes/header.php'; ?>
     <div class="container">
         <div class="about-page">
             <div class="about-content">
@@ -60,5 +64,8 @@ $meta_description = $page['meta_description_' . $lang] ?? '';
             </div>
         </div>
     </div>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
