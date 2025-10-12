@@ -10,7 +10,7 @@ if (!isset($static_page)) {
     $page_file = __DIR__ . '/../storage/index_static_pages.json';
     if (file_exists($page_file)) {
         $json = json_decode(file_get_contents($page_file), true);
-        $pages = $json['pages'] ?? [];
+        $pages = $json['posts'] ?? [];
     }
     foreach ($pages as $p) {
         if (($p['slug_' . CURRENT_LANG] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
