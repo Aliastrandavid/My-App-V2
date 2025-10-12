@@ -23,7 +23,7 @@ if (!isset($static_page)) {
 // 404 si page non trouvée ou non publiée
 if (!$static_page || $static_page['status'] !== 'published') {
     header("HTTP/1.0 404 Not Found");
-    echo "<h1>404 - Page Not Found</h1>";
+    echo "<h1>404 - Page Not Found</h1> (page.php)";
     echo "<p>The page you are looking for does not exist.</p>";
     echo "<p><a href='" . get_site_url() . "'>Go to homepage</a></p>";
     exit;

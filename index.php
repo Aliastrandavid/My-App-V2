@@ -49,7 +49,7 @@ if (isset($path_parts[0]) && $path_parts[0] === 'admin') {
         } else {
             // 404 page
             header("HTTP/1.0 404 Not Found");
-            echo "<h1>404 - Admin Page Not Found</h1>";
+            echo "<h1>404 - Admin Page Not Found</h1> (index.php)";
             echo "<p>The admin page you are looking for does not exist.</p>";
             echo "<p><a href='/admin'>Go to admin dashboard</a></p>";
         }
@@ -101,7 +101,7 @@ if ($is_post) {
         include $template_file;
     } else {
         // Fallback : page générique
-        $static_page = get_static_page_by_slug($slug, CURRENT_LANG) ?: get_static_page('home');
+        $static_page = get_static_page_by_slug($slug, CURRENT_LANG) ?: get_static_page('page');
         if ($static_page) {
             // Variables dynamiques pour page.php
             $title = $static_page['title_' . CURRENT_LANG] ?? $static_page['title_en'];
@@ -112,7 +112,7 @@ if ($is_post) {
         } else {
             // 404 page
             header("HTTP/1.0 404 Not Found");
-            echo "<h1>404 - Page Not Found</h1>";
+            echo "<h1>404 - Page Not Found</h1> (index.php)";
             echo "<p>The page you are looking for does not exist.</p>";
             echo "<p><a href='/'>Go to homepage</a></p>";
         }
