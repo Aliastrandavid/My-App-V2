@@ -42,14 +42,31 @@ if (isset($path_parts[0]) && $path_parts[0] === 'admin') {
         // Base admin URL - include index
         include 'admin/index.php';
     } else {
+        // Security: sanitize path to prevent directory traversal
+        // Remove any ../ or .\ sequences
+        $admin_path = str_replace(['../', '..\\', '../', '..'], '', $admin_path);
+        
+        // Only allow alphanumeric characters, hyphens, underscores, and single forward slashes
+        if (!preg_match('/^[a-zA-Z0-9\/_-]+$/', $admin_path)) {
+            header("HTTP/1.0 403 Forbidden");
+            echo "<h1>403 - Forbidden</h1>";
+            echo "<p>Invalid admin path.</p>";
+            exit;
+        }
+        
         // Check if the file exists
         $admin_file = 'admin/' . $admin_path . '.php';
-        if (file_exists($admin_file)) {
+        
+        // Additional security: verify the resolved path is still within admin directory
+        $real_admin_file = realpath($admin_file);
+        $real_admin_dir = realpath('admin');
+        
+        if ($real_admin_file && $real_admin_dir && strpos($real_admin_file, $real_admin_dir) === 0 && file_exists($admin_file)) {
             include $admin_file;
         } else {
             // 404 page
             header("HTTP/1.0 404 Not Found");
-            echo "<h1>404 - Admin Page Not Found</h1> (index.php)";
+            echo "<h1>404 - Admin Page Not Found</h1>";
             echo "<p>The admin page you are looking for does not exist.</p>";
             echo "<p><a href='/admin'>Go to admin dashboard</a></p>";
         }
@@ -67,7 +84,7 @@ if (in_array($path_parts[0], get_available_languages())) {
 }
 
 // Default page is home
-$page = 'page';
+$page = 'home';
 $slug = '';
 $is_post = false;
 
