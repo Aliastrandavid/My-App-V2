@@ -2,7 +2,8 @@
 /**
  * Static page template
  */
-$static_page = $static_page ?? null;
+//$static_page = $static_page ?? null;
+$static_page = get_static_page_by_slug($slug, CURRENT_LANG);
 // Get page data if not already set in index.php
 if (!isset($static_page)) {
     // Lecture directe du JSON centralisé
