@@ -2,7 +2,7 @@
 /**
  * Static page template
  */
-
+$static_page = $static_page ?? null;
 // Get page data if not already set in index.php
 if (!isset($static_page)) {
     // Lecture directe du JSON centralisé
