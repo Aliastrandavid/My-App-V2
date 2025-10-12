@@ -17,8 +17,8 @@ function get_static_pages() {
     if (file_exists($pages_file)) {
         $pages = read_json_file($pages_file);
         
-        if (is_array($pages) && isset($pages['pages'])) {
-            return $pages['pages'];
+        if (is_array($pages) && isset($pages['posts'])) {
+            return $pages['posts'];
         }
     }
     
@@ -32,7 +32,7 @@ function get_static_pages() {
             'slug_fr' => 'accueil',
             'content_en' => '<h1>Welcome to Our Website</h1><p>This is a flat headless CMS built with PHP and JSON storage.</p>',
             'content_fr' => '<h1>Bienvenue sur notre site Web</h1><p>Ceci est un CMS headless à plat construit avec PHP et stockage JSON.</p>',
-            'template' => 'home.html',
+            'template' => 'home.php',
             'status' => 'published',
             'created_at' => date('Y-m-d\TH:i:s\Z'),
             'updated_at' => date('Y-m-d\TH:i:s\Z')
@@ -45,7 +45,7 @@ function get_static_pages() {
             'slug_fr' => 'a-propos',
             'content_en' => '<h1>About Our Company</h1><p>Welcome to our company page.</p>',
             'content_fr' => '<h1>À propos de notre entreprise</h1><p>Bienvenue sur la page de notre entreprise.</p>',
-            'template' => 'about.html',
+            'template' => 'about.php',
             'status' => 'published',
             'created_at' => date('Y-m-d\TH:i:s\Z'),
             'updated_at' => date('Y-m-d\TH:i:s\Z')
@@ -58,7 +58,7 @@ function get_static_pages() {
             'slug_fr' => 'blog',
             'content_en' => '<h1>Our Blog</h1><p>Stay updated with our latest news and insights.</p>',
             'content_fr' => '<h1>Notre Blog</h1><p>Restez à jour avec nos dernières nouvelles et insights.</p>',
-            'template' => 'blog.html',
+            'template' => 'blog.php',
             'status' => 'published',
             'created_at' => date('Y-m-d\TH:i:s\Z'),
             'updated_at' => date('Y-m-d\TH:i:s\Z')
@@ -71,7 +71,7 @@ function get_static_pages() {
             'slug_fr' => 'contact',
             'content_en' => '<h1>Contact Us</h1><p>We\'d love to hear from you!</p>',
             'content_fr' => '<h1>Contactez-nous</h1><p>Nous aimerions avoir de vos nouvelles !</p>',
-            'template' => 'contact.html',
+            'template' => 'contact.php',
             'status' => 'published',
             'created_at' => date('Y-m-d\TH:i:s\Z'),
             'updated_at' => date('Y-m-d\TH:i:s\Z')
