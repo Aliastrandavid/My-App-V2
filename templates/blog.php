@@ -1,5 +1,10 @@
-<!-- Contenu spécifique de la page blog -->
-<h1>Blog Posts</h1>
+<?php
+/**
+ * Blog listing page content partial
+ * Variables available: $posts
+ */
+?>
+<h1 class="mb-4">Blog Posts</h1>
 <div class="row">
     <?php if (!empty($posts)): ?>
         <?php foreach ($posts as $post): ?>

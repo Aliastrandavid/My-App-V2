@@ -1,54 +1,26 @@
 <?php
 /**
- * Static page template
+ * Master page template - Uniform layout for all static pages
+ * This template includes header, navigation, footer and dynamically loads content partials
  */
-//$static_page = $static_page ?? null;
-$static_page = get_static_page_by_slug($slug, CURRENT_LANG);
-// Get page data if not already set in index.php
-if (!isset($static_page)) {
-    // Lecture directe du JSON centralisé
-    $pages = [];
-    $page_file = __DIR__ . '/../storage/index_static_pages.json';
-    if (file_exists($page_file)) {
-        $json = json_decode(file_get_contents($page_file), true);
-        $pages = $json['posts'] ?? [];
-    }
-    foreach ($pages as $p) {
-        if (($p['slug_' . CURRENT_LANG] ?? '') === $slug && ($p['status'] ?? '') === 'published') {
-            $static_page = $p;
-            break;
-        }
-    }
-}
 
-// 404 si page non trouvée ou non publiée
-if (!$static_page || $static_page['status'] !== 'published') {
-    header("HTTP/1.0 404 Not Found");
-    echo "<h1>404 - Page Not Found</h1> (page.php)";
-    echo "<p>The page you are looking for does not exist.</p>";
-    echo "<p><a href='" . get_site_url() . "'>Go to homepage</a></p>";
-    exit;
-}
+// Extract template context variables
+extract($template_context);
 
-// Récupère les métadonnées
+// Get site settings
 $site_title = get_general_settings()['site_title'] ?? 'Flat Headless CMS';
-$meta_title = $static_page['meta_title_' . CURRENT_LANG] ?? $static_page['meta_title_en'];
-$meta_description = $static_page['meta_description_' . CURRENT_LANG] ?? $static_page['meta_description_en'];
-
-// Inclusion du header
-include __DIR__ . '/includes/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo CURRENT_LANG; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($title); ?> - <?php echo htmlspecialchars($site_title); ?></title>
+    <title><?php echo htmlspecialchars($meta_title); ?> - <?php echo htmlspecialchars($site_title); ?></title>
+    <?php if (!empty($meta_description)): ?>
+    <meta name="description" content="<?php echo htmlspecialchars(strip_tags($meta_description)); ?>">
+    <?php endif; ?>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo get_site_url(); ?>/css/style.css">
 </head>
 <body>
@@ -70,20 +42,29 @@ include __DIR__ . '/includes/header.php';
 
     <!-- Page Content -->
     <div class="container my-5">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <!-- <h1 class="fw-bolder mb-4"><?php echo htmlspecialchars($title); ?></h1> -->
-                
-                <div class="page-content">
-                    <?php echo $page_content; ?>
+        <?php
+        // Include page-specific content partial
+        $partial_file = __DIR__ . '/' . $template_name . '.php';
+        if (file_exists($partial_file)) {
+            include $partial_file;
+        } else {
+            // Fallback to generic content display
+            ?>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h1 class="mb-4"><?php echo htmlspecialchars($title); ?></h1>
+                    <div class="page-content">
+                        <?php echo $page_content; ?>
+                    </div>
                 </div>
             </div>
-        </div>
+            <?php
+        }
+        ?>
     </div>
 
     <!-- Footer -->
     <?php include __DIR__ . '/includes/footer.php'; ?>
-
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

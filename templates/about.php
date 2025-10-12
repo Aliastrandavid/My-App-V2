@@ -1,8 +1,16 @@
-<div class="container">
-    <div class="about-page">
+<?php
+/**
+ * About page content partial
+ * Variables available: $page_content
+ */
+?>
+<div class="row">
+    <div class="col-lg-8">
         <div class="about-content">
-            <?php echo $meta_description; ?>
+            <?php echo $page_content; ?>
         </div>
+    </div>
+    <div class="col-lg-4">
         <div class="about-sidebar">
             <h3>Company Info</h3>
             <p>Founded in 2023</p>

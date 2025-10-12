@@ -87,6 +87,7 @@ if (in_array($path_parts[0], get_available_languages())) {
 $page = 'home';
 $slug = '';
 $is_post = false;
+$template_name = 'home';
 
 // Determine what to load
 if (!empty($path_parts[0])) {
@@ -98,6 +99,7 @@ if (!empty($path_parts[0])) {
     } else {
         // Static page
         $slug = $path_parts[0];
+        $template_name = $slug;  // Preserve slug for template selection
         $static_page = get_static_page_by_slug($slug, CURRENT_LANG);
         
         if ($static_page) {
@@ -106,32 +108,52 @@ if (!empty($path_parts[0])) {
     }
 }
 
-
-
 // Load appropriate template
 if ($is_post) {
+    // Single post - use dedicated post template
     include 'templates/post.php';
 } else {
-    // Priorité aux nouveaux templates PHP pour les pages statiques
-    $template_file = 'templates/' . $page . '.php';
-    if (file_exists($template_file)) {
-        include $template_file;
-    } else {
-        // Fallback : page générique
-        $static_page = get_static_page_by_slug($slug, CURRENT_LANG) ?: get_static_page('page');
-        if ($static_page) {
-            // Variables dynamiques pour page.php
-            $title = $static_page['title_' . CURRENT_LANG] ?? $static_page['title_en'];
-            $content = $static_page['content_' . CURRENT_LANG] ?? $static_page['content_en'];
-            $meta_title = $static_page['meta_title_' . CURRENT_LANG] ?? $title;
-            $meta_description = $static_page['meta_description_' . CURRENT_LANG] ?? '';
-            include 'templates/page.php';
-        } else {
-            // 404 page
-            header("HTTP/1.0 404 Not Found");
-            echo "<h1>404 - Page Not Found</h1> (index.php)";
-            echo "<p>The page you are looking for does not exist.</p>";
-            echo "<p><a href='/'>Go to homepage</a></p>";
-        }
+    // Static pages - use page.php as master layout with dynamic content
+    $static_page = !empty($slug) ? get_static_page_by_slug($slug, CURRENT_LANG) : get_static_page($page);
+    
+    if (!$static_page || $static_page['status'] !== 'published') {
+        // 404 page
+        header("HTTP/1.0 404 Not Found");
+        echo "<h1>404 - Page Not Found</h1>";
+        echo "<p>The page you are looking for does not exist.</p>";
+        echo "<p><a href='/'>Go to homepage</a></p>";
+        exit;
     }
+    
+    // Build template context
+    $template_context = [
+        'page_id' => $static_page['id'],
+        'title' => $static_page['title_' . CURRENT_LANG] ?? $static_page['title_en'],
+        'meta_title' => $static_page['meta_title_' . CURRENT_LANG] ?? $static_page['meta_title_en'] ?? ($static_page['title_' . CURRENT_LANG] ?? $static_page['title_en']),
+        'meta_description' => $static_page['meta_description_' . CURRENT_LANG] ?? $static_page['meta_description_en'] ?? '',
+        'page_content' => $static_page['content_' . CURRENT_LANG] ?? $static_page['content_en'] ?? '',
+        'slug' => $slug
+    ];
+    
+    // Add page-specific context based on template name (slug-based)
+    if ($template_name === 'home') {
+        $template_context['latest_posts'] = get_posts('blog', [
+            'status' => 'published',
+            'per_page' => 5,
+            'sort' => 'date_desc'
+        ]);
+    } elseif ($template_name === 'blog') {
+        $template_context['posts'] = get_posts('blog', [
+            'status' => 'published',
+            'sort' => 'date_desc'
+        ]);
+    }
+    
+    // If page_content is empty but meta_description exists, use it
+    if (empty($template_context['page_content']) && !empty($template_context['meta_description'])) {
+        $template_context['page_content'] = $template_context['meta_description'];
+    }
+    
+    // Load master template (page.php) which will include the specific content partial
+    include 'templates/page.php';
 }
