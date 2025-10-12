@@ -67,7 +67,7 @@ if (in_array($path_parts[0], get_available_languages())) {
 }
 
 // Default page is home
-$page = 'home';
+$page = 'page';
 $slug = '';
 $is_post = false;
 
