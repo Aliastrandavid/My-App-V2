@@ -124,7 +124,7 @@ $recent_properties = array_slice($properties, 0, 5);
                         </div>
 
                         <div class="col-md-3 mb-4">
-                            <div class="card text-white bg-primary h-100">
+                            <div class="card text-white bg-dark h-100">
                                 <div class="card-header">
                                     Total Pages (Static)
                                 </div>
