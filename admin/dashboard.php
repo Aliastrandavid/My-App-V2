@@ -22,6 +22,8 @@ $username = $_SESSION['username'] ?? 'User';
 $post_types = get_post_types();
 $posts_data = [];
 $post_counts = [];
+$pages_data = [];
+$pages_counts = [];
 $taxonomy_counts = [];
 
 // Read blog JSON file
@@ -32,6 +34,16 @@ if (file_exists($posts_file)) {
     // Count posts by type
     foreach ($posts_data as $post_type => $posts) {
         $post_counts[$post_type] = count($posts);
+    }
+}
+// Read PAGES JSON file
+$pages_file = '../storage/index_static_pages.json';
+if (file_exists($pages_file)) {
+    $pages_data = read_json_file($pages_file);
+
+    // Count posts by type
+    foreach ($pages_data as $post_type => $pages) {
+        $pages_counts[$post_type] = count($pages);
     }
 }
 
@@ -50,6 +62,7 @@ if (file_exists($taxonomies_file) && file_exists($terms_file)) {
 
 // Get total content count
 $total_posts = array_sum($post_counts);
+$total_pages = array_sum($pages_counts);
 $total_taxonomies = count($taxonomies ?? []);
 $total_terms = array_sum($taxonomy_counts);
 
@@ -106,6 +119,17 @@ $recent_properties = array_slice($properties, 0, 5);
                                 </div>
                                 <div class="card-body">
                                     <p class="card-text display-4 mb-0"><?php echo $total_posts; ?></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-primary h-100">
+                                <div class="card-header">
+                                    Total Pages Posts
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text display-4 mb-0"><?php echo $total_pages; ?></p>
                                 </div>
                             </div>
                         </div>
