@@ -265,6 +265,20 @@ function get_language_url($language) {
     // Get current language
     $current_lang = defined('CURRENT_LANG') ? CURRENT_LANG : DEFAULT_LANGUAGE;
     
+    // If we have a current page ID, use it to get the correct slug in the target language
+    if (defined('CURRENT_PAGE_ID')) {
+        $page = get_static_page(CURRENT_PAGE_ID);
+        
+        if ($page) {
+            $target_slug_field = 'slug_' . $language;
+            $target_slug = isset($page[$target_slug_field]) ? $page[$target_slug_field] : $page['slug_en'];
+            
+            // Build URL with target language and correct slug
+            return get_site_url() . '/' . $language . '/' . $target_slug;
+        }
+    }
+    
+    // Fallback: simple replacement (for blog posts or other pages)
     // If the URL already has a language code, replace it
     if (strpos($current_uri, '/' . $current_lang . '/') === 0) {
         return str_replace('/' . $current_lang . '/', '/' . $language . '/', $current_uri);

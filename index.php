@@ -125,6 +125,9 @@ if ($is_post) {
         exit;
     }
     
+    // Define current page ID globally for language switcher
+    define('CURRENT_PAGE_ID', $static_page['id']);
+    
     // Build template context
     $template_context = [
         'page_id' => $static_page['id'],
