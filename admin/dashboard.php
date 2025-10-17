@@ -31,9 +31,9 @@ $posts_file = '../storage/blog.json';
 if (file_exists($posts_file)) {
     $posts_data = read_json_file($posts_file);
 
-    // Count posts by type
-    foreach ($posts_data as $post_type => $posts) {
-        $post_counts[$post_type] = count($posts);
+    // Count posts by type correctly
+    if (isset($posts_data['posts']) && is_array($posts_data['posts'])) {
+        $post_counts['blog'] = count($posts_data['posts']);
     }
 }
 // Read PAGES JSON file
