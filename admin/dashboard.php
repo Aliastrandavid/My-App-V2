@@ -36,6 +36,29 @@ if (file_exists($posts_file)) {
         $post_counts['blog'] = count($posts_data['posts']);
     }
 }
+
+// Read PAGES JSON file
+$pages_file = '../storage/index_static_pages.json';
+if (file_exists($pages_file)) {
+    $pages_data = read_json_file($pages_file);
+
+    // Count pages correctly
+    if (isset($pages_data['posts']) && is_array($pages_data['posts'])) {
+        $post_counts['index_static_pages'] = count($pages_data['posts']);
+        $pages_counts['index_static_pages'] = count($pages_data['posts']);
+    }
+}
+
+// Read PRODUCT JSON file
+$product_file = '../storage/product.json';
+if (file_exists($product_file)) {
+    $product_data = read_json_file($product_file);
+
+    // Count products correctly
+    if (isset($product_data['posts']) && is_array($product_data['posts'])) {
+        $post_counts['product'] = count($product_data['posts']);
+    }
+}
 // Read PAGES JSON file
 $pages_file = '../storage/index_static_pages.json';
 if (file_exists($pages_file)) {
@@ -192,7 +215,18 @@ $recent_properties = array_slice($properties, 0, 5);
                                                             <i class="bi <?php echo $post_type['icon'] ?? 'bi-file-earmark'; ?>"></i>
                                                             <?php echo htmlspecialchars($post_type['name_' . DEFAULT_LANGUAGE] ?? $post_type['name'] ?? ''); ?>
                                                         </td>
-                                                        <td><?php echo $post_counts[$slug] ?? 0; ?></td>
+                                                        <td><?php
+                                                            // Get the count for the current post type
+                                                            $count = 0;
+                                                            if ($slug === 'blog' && isset($post_counts['blog'])) {
+                                                                $count = $post_counts['blog'];
+                                                            } elseif ($slug === 'index_static_pages' && isset($post_counts['index_static_pages'])) {
+                                                                $count = $post_counts['index_static_pages'];
+                                                            } elseif ($slug === 'product' && isset($post_counts['product'])) {
+                                                                $count = $post_counts['product'];
+                                                            }
+                                                            echo $count;
+                                                        ?></td>
                                                         <td>
                                                             <a href="posts.php?type=<?php echo urlencode($slug); ?>" class="btn btn-sm btn-outline-primary">View</a>
                                                         </td>
