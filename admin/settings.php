@@ -57,6 +57,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error_message = 'Language configuration file not found.';
         }
+    } elseif (isset($_POST['add_language_code']) && isset($_POST['add_language_name'])) {
+        $language_code = $_POST['add_language_code'];
+        $language_name = $_POST['add_language_name'];
+        $languages_file = '../storage/lang_config.json';
+
+        if (file_exists($languages_file)) {
+            $lang_config = read_json_file($languages_file);
+
+            // Add new language
+            if (!isset($lang_config['languages'])) {
+                $lang_config['languages'] = [];
+            }
+
+            if (!in_array($language_code, $lang_config['languages'])) {
+                $lang_config['languages'][] = $language_code;
+
+                // Add to active languages if not already active
+                if (!isset($lang_config['active_languages']) || !in_array($language_code, $lang_config['active_languages'])) {
+                    $lang_config['active_languages'][] = $language_code;
+                }
+
+                // Save updated language configuration
+                if (write_json_file($languages_file, $lang_config)) {
+                    $success_message = 'Language added successfully.';
+                } else {
+                    $error_message = 'Failed to add language. Check file permissions.';
+                }
+            } else {
+                $error_message = 'Language already exists.';
+            }
+        } else {
+            $error_message = 'Language configuration file not found.';
+        }
     } else {
         // Process site settings
         $site_title = $_POST['site_title'] ?? '';
