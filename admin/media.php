@@ -636,7 +636,7 @@ $active_languages = $lang_config['active_languages'] ?? ['en','fr'];
                                         if ($img_info) { $img_w = $img_info[0]; $img_h = $img_info[1]; }
                                     }
                                 ?>
-                                <div class="col-sm-12 col-md-4 col-lg-2 mb-4">
+                                <div class="col-sm-12 col-md-4 col-xl-3 col-xxl-2 mb-4">
                                     <div class="card h-100 position-relative">
                                         <div class="card-header d-flex justify-content-between align-items-center p-1" style="background:rgba(0,0,0,0.03);">
                                             <input type="checkbox" class="form-check-input multi-delete-checkbox" name="delete_ids[]" value="<?php echo htmlspecialchars($media_entry ? $media_entry['id'] : ''); ?>">
