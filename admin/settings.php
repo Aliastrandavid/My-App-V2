@@ -32,26 +32,54 @@ $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process site settings
-    $site_title = $_POST['site_title'] ?? '';
-    $site_description = $_POST['site_description'] ?? '';
-    $site_url = $_POST['site_url'] ?? '';
-    $admin_email = $_POST['admin_email'] ?? '';
-    $default_language = $_POST['default_language'] ?? 'en';
-    $timezone = $_POST['timezone'] ?? 'UTC';
-    
-    // Update settings
-    $settings['site_title'] = $site_title;
-    $settings['site_description'] = $site_description;
-    $settings['site_url'] = $site_url;
-    $settings['admin_email'] = $admin_email;
-    $settings['default_language'] = $default_language;
-    $settings['timezone'] = $timezone;
-    
-    // Save settings
-    if (write_json_file($settings_file, $settings)) {
-        $success_message = 'Settings saved successfully.';
+    if (isset($_POST['save_language'])) {
+        $language_code = $_POST['save_language'];
+        $languages_file = '../storage/lang_config.json';
+
+        if (file_exists($languages_file)) {
+            $lang_config = read_json_file($languages_file);
+
+            // Toggle language status
+            if (isset($lang_config['active_languages']) && in_array($language_code, $lang_config['active_languages'])) {
+                $lang_config['active_languages'] = array_filter($lang_config['active_languages'], function($code) use ($language_code) {
+                    return $code !== $language_code;
+                });
+            } else {
+                $lang_config['active_languages'][] = $language_code;
+            }
+
+            // Save updated language configuration
+            if (write_json_file($languages_file, $lang_config)) {
+                $success_message = 'Language settings saved successfully.';
+            } else {
+                $error_message = 'Failed to save language settings. Check file permissions.';
+            }
+        } else {
+            $error_message = 'Language configuration file not found.';
+        }
     } else {
-        $error_message = 'Failed to save settings. Check file permissions.';
+        // Process site settings
+        $site_title = $_POST['site_title'] ?? '';
+        $site_description = $_POST['site_description'] ?? '';
+        $site_url = $_POST['site_url'] ?? '';
+        $admin_email = $_POST['admin_email'] ?? '';
+        $default_language = $_POST['default_language'] ?? 'en';
+        $timezone = $_POST['timezone'] ?? 'UTC';
+
+        // Update settings
+        $settings['site_title'] = $site_title;
+        $settings['site_description'] = $site_description;
+        $settings['site_url'] = $site_url;
+        $settings['admin_email'] = $admin_email;
+        $settings['default_language'] = $default_language;
+        $settings['timezone'] = $timezone;
+
+        // Save settings
+        if (write_json_file($settings_file, $settings)) {
+            $success_message = 'Settings saved successfully.';
+        } else {
+            $error_message = 'Failed to save settings. Check file permissions.';
+        }
     }
 }
 
@@ -198,6 +226,7 @@ $timezones = DateTimeZone::listIdentifiers();
                                         <th>Language Name</th>
                                         <th>Status</th>
                                         <th>Actions</th>
+                                        <th>Save</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -208,6 +237,9 @@ $timezones = DateTimeZone::listIdentifiers();
                                         <td>
                                             <button class="btn btn-sm btn-outline-secondary" disabled>Default</button>
                                         </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>Save</button>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>fr</td>
@@ -215,6 +247,9 @@ $timezones = DateTimeZone::listIdentifiers();
                                         <td><span class="badge bg-success">Active</span></td>
                                         <td>
                                             <button class="btn btn-sm btn-outline-danger">Disable</button>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>Save</button>
                                         </td>
                                     </tr>
                                     <?php foreach ($languages as $code => $language): ?>
@@ -230,6 +265,11 @@ $timezones = DateTimeZone::listIdentifiers();
                                                 <td>
                                                     <button class="btn btn-sm btn-outline-<?php echo $language['active'] ? 'danger' : 'success'; ?>">
                                                         <?php echo $language['active'] ? 'Disable' : 'Enable'; ?>
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary save-language-btn" data-code="<?php echo htmlspecialchars($code); ?>">
+                                                        Save
                                                     </button>
                                                 </td>
                                             </tr>
@@ -280,5 +320,28 @@ $timezones = DateTimeZone::listIdentifiers();
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const saveButtons = document.querySelectorAll('.save-language-btn');
+
+            saveButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const languageCode = this.getAttribute('data-code');
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = 'settings.php';
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'save_language';
+                    input.value = languageCode;
+
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
