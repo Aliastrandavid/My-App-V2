@@ -41,7 +41,19 @@ $user_role = $_SESSION['role'] ?? '';
                 <ul class="submenu">
                     <?php
                     // Load post types from storage
-                    $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
+                    // Check if file exists before trying to read it
+                    if (file_exists('../storage/post_types.json')) {
+                        $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
+                    } else {
+                        // File not found, create a default array with common post types
+                        $postTypes = [
+                            'post_types' => [
+                                ['name' => 'Blog', 'slug' => 'blog'],
+                                ['name' => 'Static Pages', 'slug' => 'index_static_pages'],
+                                ['name' => 'Products', 'slug' => 'product']
+                            ]
+                        ];
+                    }
                     if ($postTypes && isset($postTypes['post_types'])) {
                         foreach ($postTypes['post_types'] as $type) {
                             echo '<li><a href="posts.php?type=' . htmlspecialchars($type['slug']) . '">' . htmlspecialchars($type['name']) . '</a></li>';
