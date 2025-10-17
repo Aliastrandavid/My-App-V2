@@ -129,7 +129,7 @@ $user_role = $_SESSION['role'] ?? '';
                     }
                     ?>
                     <?php
-                    // Debug: Check if we're in the right place
+                    /* // Debug: Check if we're in the right place
                     echo '<li>Debug: Checking Content submenu</li>';
                 
                     // Debug: Check if file exists
@@ -170,7 +170,7 @@ $user_role = $_SESSION['role'] ?? '';
                             echo '<li>Debug: Error: post_types is not an array</li>';
                         }
                     }
-                    ?>
+                    ?> */
                     <?php
                     // Load post types from storage
                     // Check if file exists before trying to read it
