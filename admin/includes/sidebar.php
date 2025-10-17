@@ -65,6 +65,49 @@ $user_role = $_SESSION['role'] ?? '';
                 ?>
                 <ul class="submenu">
                     <?php
+                    // Debug: Check if we're in the right place
+                    echo '<li>Debug: Checking Content submenu</li>';
+                
+                    // Debug: Check if file exists
+                    echo '<li>Debug: Checking if post_types.json exists: ' . (file_exists('../storage/post_types.json') ? 'Yes' : 'No') . '</li>';
+                
+                    // Check if file exists before trying to read it
+                    if (file_exists('../storage/post_types.json')) {
+                        echo '<li>Debug: Loading post types from file</li>';
+                        $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
+                        echo '<li>Debug: Post types loaded: ' . print_r($postTypes, true) . '</li>';
+                    } else {
+                        // File not found, create a default array with common post types
+                        echo '<li>Debug: Using default post types</li>';
+                        $postTypes = [
+                            'post_types' => [
+                                ['name' => 'Blog', 'slug' => 'blog'],
+                                ['name' => 'Static Pages', 'slug' => 'index_static_pages'],
+                                ['name' => 'Products', 'slug' => 'product']
+                            ]
+                        ];
+                        echo '<li>Debug: Default post types: ' . print_r($postTypes, true) . '</li>';
+                    }
+                
+                    // Debug: Check if post_types array exists
+                    if (!isset($postTypes['post_types'])) {
+                        echo '<li>Debug: Error: post_types array not found in loaded data</li>';
+                    } else {
+                        echo '<li>Debug: Post types array found with ' . count($postTypes['post_types']) . ' items</li>';
+                
+                        // Debug: Check if we can iterate through post types
+                        if (is_array($postTypes['post_types'])) {
+                            echo '<li>Debug: Iterating through post types</li>';
+                            foreach ($postTypes['post_types'] as $type) {
+                                echo '<li>Debug: Processing post type: ' . htmlspecialchars($type['name']) . ' (' . htmlspecialchars($type['slug']) . ')</li>';
+                                echo '<li><a href="posts.php?type=' . htmlspecialchars($type['slug']) . '">' . htmlspecialchars($type['name']) . '</a></li>';
+                            }
+                        } else {
+                            echo '<li>Debug: Error: post_types is not an array</li>';
+                        }
+                    }
+                    ?>
+                    <?php
                     // Load post types from storage
                     // Check if file exists before trying to read it
                     if (file_exists('../storage/post_types.json')) {
