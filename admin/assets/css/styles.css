@@ -188,6 +188,7 @@ pre {
 
 .nav-item:hover .submenu {
     display: block;
+    position: absolute;
 }
 
 .nav-item .submenu li {
