@@ -332,23 +332,23 @@ $timezones = DateTimeZone::listIdentifiers();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addLanguageForm">
+                    <form id="addLanguageForm" method="post" action="settings.php">
                         <div class="mb-3">
                             <label for="language_code" class="form-label">Language Code</label>
-                            <input type="text" class="form-control" id="language_code" name="language_code" 
+                            <input type="text" class="form-control" id="language_code" name="language_code"
                                    placeholder="e.g., es, de, it" required>
                             <div class="form-text">Use the ISO 639-1 two-letter code for the language.</div>
                         </div>
                         <div class="mb-3">
                             <label for="language_name" class="form-label">Language Name</label>
-                            <input type="text" class="form-control" id="language_name" name="language_name" 
+                            <input type="text" class="form-control" id="language_name" name="language_name"
                                    placeholder="e.g., Spanish, German, Italian" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Add Language</button>
+                    <button type="submit" class="btn btn-primary" form="addLanguageForm">Add Language</button>
                 </div>
             </div>
         </div>
@@ -376,6 +376,36 @@ $timezones = DateTimeZone::listIdentifiers();
                     form.submit();
                 });
             });
+
+            // Handle modal form submission
+            const addLanguageForm = document.getElementById('addLanguageForm');
+            if (addLanguageForm) {
+                addLanguageForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const languageCode = document.getElementById('language_code').value;
+                    const languageName = document.getElementById('language_name').value;
+
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = 'settings.php';
+
+                    const codeInput = document.createElement('input');
+                    codeInput.type = 'hidden';
+                    codeInput.name = 'add_language_code';
+                    codeInput.value = languageCode;
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'hidden';
+                    nameInput.name = 'add_language_name';
+                    nameInput.value = languageName;
+
+                    form.appendChild(codeInput);
+                    form.appendChild(nameInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            }
         });
     </script>
 </body>
