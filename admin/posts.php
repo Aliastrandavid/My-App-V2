@@ -281,12 +281,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
                 ?>
                 <div class="text-center mb-4">
-                    <div class="btn-group" role="group" aria-label="Items per page">
-                        <?php $nbpages = ($nbofpost/10)+1;?>
-                        <?php for ($page = 1; $page <= $nbpages; $page+=1) { ?>
-                        &nbsp<a href="posts.php?page=<?=$page?>&status=<?=(isset($_GET['status']) ? $_GET['status'] : "")?>" 
-                           class="btn btn-sm  <?php echo $items_per_page == 10 ? 'btn-primary' : 'btn-outline-primary'; ?>"><?=$page?></a>
-                                                         <?php } ?>
+                    <div class="btn-group" role="group" aria-label="Pagination">
+                        <?php
+                        $nbpages = ceil($nbofpost / $items_per_page);
+                        $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                        $status = isset($_GET['status']) ? $_GET['status'] : "";
+                        $search = isset($_GET['search']) ? $_GET['search'] : "";
+                
+                        // Add query parameters to the URL
+                        $query_params = [];
+                        if (!empty($status)) $query_params[] = "status=$status";
+                        if (!empty($search)) $query_params[] = "search=$search";
+                        $query_string = !empty($query_params) ? "?" . implode("&", $query_params) : "";
+                
+                        // Determine if we should show the first page button
+                        $show_first_page = $current_page > 1;
+                
+                        // Determine if we should show the last page button
+                        $show_last_page = $current_page < $nbpages;
+                
+                        // Determine if we should show the previous page button
+                        $show_previous = $current_page > 1;
+                
+                        // Determine if we should show the next page button
+                        $show_next = $current_page < $nbpages;
+                        ?>
+                        <?php if ($show_previous): ?>
+                            <a href="posts.php?page=<?php echo $current_page - 1; ?><?php echo $query_string; ?>"
+                               class="btn btn-sm btn-light">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        <?php else: ?>
+                            <button class="btn btn-sm btn-light" disabled>
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                        <?php endif; ?>
+                
+                        <?php for ($page = 1; $page <= $nbpages; $page++): ?>
+                            <?php if ($page == $current_page): ?>
+                                <button class="btn btn-sm btn-primary" disabled>
+                                    <?php echo $page; ?>
+                                </button>
+                            <?php else: ?>
+                                <a href="posts.php?page=<?php echo $page; ?><?php echo $query_string; ?>"
+                                   class="btn btn-sm btn-light">
+                                    <?php echo $page; ?>
+                                </a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                
+                        <?php if ($show_next): ?>
+                            <a href="posts.php?page=<?php echo $current_page + 1; ?><?php echo $query_string; ?>"
+                               class="btn btn-sm btn-light">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        <?php else: ?>
+                            <button class="btn btn-sm btn-light" disabled>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </main>
