@@ -171,3 +171,42 @@ pre {
     border-radius: 5px;
     margin-bottom: 20px;
 }
+
+/* Submenu styles */
+.nav-item .submenu {
+    display: none;
+    position: relative;
+    left: 100%;
+    top: 0;
+    list-style: none;
+    padding-left: 0;
+    background-color: var(--card-bg);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.nav-item:hover .submenu {
+    display: block;
+}
+
+.nav-item .submenu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item .submenu a {
+    display: block;
+    padding: 8px 15px;
+    color: var(--text-color);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nav-item .submenu a:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.nav-item .submenu a.active {
+    background-color: var(--primary-bg);
+}

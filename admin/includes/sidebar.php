@@ -37,6 +37,18 @@ $user_role = $_SESSION['role'] ?? '';
                     <i class="bi bi-file-text me-2"></i>
                     Content
                 </a>
+                <!-- Submenu for Content -->
+                <ul class="submenu">
+                    <?php
+                    // Load post types from storage
+                    $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
+                    if ($postTypes && isset($postTypes['post_types'])) {
+                        foreach ($postTypes['post_types'] as $type) {
+                            echo '<li><a href="posts.php?type=' . htmlspecialchars($type['slug']) . '">' . htmlspecialchars($type['name']) . '</a></li>';
+                        }
+                    }
+                    ?>
+                </ul>
             </li>
             
             <!-- Post Types -->
