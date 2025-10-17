@@ -249,7 +249,9 @@ $timezones = DateTimeZone::listIdentifiers();
                                             <button class="btn btn-sm btn-outline-danger">Disable</button>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-secondary" disabled>Save</button>
+                                            <button class="btn btn-sm btn-outline-primary save-language-btn" data-code="fr">
+                                                Save
+                                            </button>
                                         </td>
                                     </tr>
                                     <?php foreach ($languages as $code => $language): ?>
