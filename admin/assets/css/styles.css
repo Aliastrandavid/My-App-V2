@@ -175,7 +175,7 @@ pre {
 /* Submenu styles */
 .nav-item .submenu {
     display: none;
-    position: relative;
+    position: absolute;
     left: 100%;
     top: 0;
     list-style: none;
