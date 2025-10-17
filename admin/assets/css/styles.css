@@ -177,14 +177,14 @@ pre {
     display: none;
     position: absolute;
     left: 100%;
-    top: 0;
+    top: auto;
     list-style: none;
-    padding-left: 0;
-    background-color: var(--card-bg);
+    background-color: #000;
     border-radius: 0 4px 4px 0;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    z-index: 1000;
-}
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    color: white;
+    padding: 15px;
 
 .nav-item:hover .submenu {
     display: block;
