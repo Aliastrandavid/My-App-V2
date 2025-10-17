@@ -38,6 +38,31 @@ $user_role = $_SESSION['role'] ?? '';
                     Content
                 </a>
                 <!-- Submenu for Content -->
+                <?php
+                // Debug: Check if we're in the right place
+                error_log("Debug: Checking Content submenu");
+                
+                // Debug: Check if file exists
+                error_log("Debug: Checking if post_types.json exists: " . (file_exists('../storage/post_types.json') ? 'Yes' : 'No'));
+                
+                // Check if file exists before trying to read it
+                if (file_exists('../storage/post_types.json')) {
+                    error_log("Debug: Loading post types from file");
+                    $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
+                    error_log("Debug: Post types loaded: " . print_r($postTypes, true));
+                } else {
+                    // File not found, create a default array with common post types
+                    error_log("Debug: Using default post types");
+                    $postTypes = [
+                        'post_types' => [
+                            ['name' => 'Blog', 'slug' => 'blog'],
+                            ['name' => 'Static Pages', 'slug' => 'index_static_pages'],
+                            ['name' => 'Products', 'slug' => 'product']
+                        ]
+                    ];
+                    error_log("Debug: Default post types: " . print_r($postTypes, true));
+                }
+                ?>
                 <ul class="submenu">
                     <?php
                     // Load post types from storage
