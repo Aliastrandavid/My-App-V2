@@ -74,93 +74,57 @@ $user_role = $_SESSION['role'] ?? '';
 75 |                 }
 76 |                 ?>
 77 |                 <ul class="submenu">
-78 |                     <?php
-79 |                     // Load post types from storage
-80 |                     if (file_exists('../storage/post_types.json')) {
-81 |                         $postTypes = json_decode(file_get_contents('../storage/post_types.json'), true);
-82 |
-83 |                         // Check if post_types array exists
-84 |                         if (is_array($postTypes)) {
-85 |                             foreach ($postTypes as $slug => $type) {
-86 |                                 echo '<li><a href="posts.php?type=' . htmlspecialchars($slug) . '">' . htmlspecialchars($type['name_en'] ?? $type['name_fr'] ?? $slug) . '</a></li>';
-87 |                             }
-88 |                         }
-89 |                     } else {
-90 |                         // File not found, create a default array with common post types
-91 |                         $postTypes = [
-92 |                             'blog' => [
-93 |                                 'name_en' => 'Blog',
-94 |                                 'name_fr' => 'Articles de Blog',
-95 |                                 'slug' => 'blog'
-96 |                             ],
-97 |                             'index_static_pages' => [
-98 |                                 'name_en' => 'Static Pages',
-99 |                                 'name_fr' => 'Pages',
-100 |                                 'slug' => 'index_static_pages'
-101 |                             ],
-102 |                             'product' => [
-103 |                                 'name_en' => 'Products',
-104 |                                 'name_fr' => 'Produits',
-105 |                                 'slug' => 'product'
-106 |                             ]
-107 |                         ];
-108 |
-109 |                         foreach ($postTypes as $slug => $type) {
-110 |                             echo '<li><a href="posts.php?type=' . htmlspecialchars($slug) . '">' . htmlspecialchars($type['name_en'] ?? $type['name_fr'] ?? $slug) . '</a></li>';
-111 |                         }
-112 |                     }
-113 |                     ?>
-114 |                 </ul>
-115 |             </li>
-116 |
-117 |             <!-- Post Types -->
-118 |             <li class="nav-item">
-119 |                 <a class="nav-link <?php echo $current_page === 'post-types.php' ? 'active' : ''; ?>" href="post-types.php">
-120 |                     <i class="bi bi-collection me-2"></i>
-121 |                     Post Types
-122 |                 </a>
-123 |             </li>
-124 |
-125 |             <!-- Media -->
-126 |             <li class="nav-item">
-127 |                 <a class="nav-link <?php echo $current_page === 'media.php' ? 'active' : ''; ?>" href="media.php">
-128 |                     <i class="bi bi-images me-2"></i>
-129 |                     Media
-130 |                 </a>
-131 |             </li>
-132 |
-133 |             <!-- Taxonomies -->
-134 |             <li class="nav-item">
-135 |                 <a class="nav-link <?php echo $current_page === 'taxonomies.php' ? 'active' : ''; ?>" href="taxonomies.php">
-136 |                     <i class="bi bi-diagram-3 me-2"></i>
-137 |                     Taxonomies
-138 |                 </a>
-139 |             </li>
-140 |
-141 |             <!-- Admin only features -->
-142 |             <?php if ($user_role === 'admin'): ?>
-143 |             <li class="nav-item">
-144 |                 <a class="nav-link <?php echo $current_page === 'users.php' ? 'active' : ''; ?>" href="users.php">
-145 |                     <i class="bi bi-people me-2"></i>
-146 |                     Users
-147 |                 </a>
-148 |             </li>
-149 |
-150 |             <li class="nav-item">
-151 |                 <a class="nav-link <?php echo $current_page === 'settings.php' ? 'active' : ''; ?>" href="settings.php">
-152 |                     <i class="bi bi-gear me-2"></i>
-153 |                     Settings
-154 |                 </a>
-155 |             </li>
-156 |             <?php endif; ?>
-157 |         </ul>
-158 |
-159 |         <!-- Logout button at bottom -->
-160 |         <div class="px-3 mt-4">
-161 |             <a href="simple_logout.php" class="btn btn-outline-light w-100">
-162 |                 <i class="bi bi-box-arrow-right me-2"></i>
-163 |                 Logout
-164 |             </a>
-165 |         </div>
-166 |     </div>
-167 | </nav>
+78 |                 </ul>
+79 |             </li>
+80 |
+81 |             <!-- Post Types -->
+82 |             <li class="nav-item">
+83 |                 <a class="nav-link <?php echo $current_page === 'post-types.php' ? 'active' : ''; ?>" href="post-types.php">
+84 |                     <i class="bi bi-collection me-2"></i>
+85 |                     Post Types
+86 |                 </a>
+87 |             </li>
+88 |
+89 |             <!-- Media -->
+90 |             <li class="nav-item">
+91 |                 <a class="nav-link <?php echo $current_page === 'media.php' ? 'active' : ''; ?>" href="media.php">
+92 |                     <i class="bi bi-images me-2"></i>
+93 |                     Media
+94 |                 </a>
+95 |             </li>
+96 |
+97 |             <!-- Taxonomies -->
+98 |             <li class="nav-item">
+99 |                 <a class="nav-link <?php echo $current_page === 'taxonomies.php' ? 'active' : ''; ?>" href="taxonomies.php">
+100 |                     <i class="bi bi-diagram-3 me-2"></i>
+101 |                     Taxonomies
+102 |                 </a>
+103 |             </li>
+104 |
+105 |             <!-- Admin only features -->
+106 |             <?php if ($user_role === 'admin'): ?>
+107 |             <li class="nav-item">
+108 |                 <a class="nav-link <?php echo $current_page === 'users.php' ? 'active' : ''; ?>" href="users.php">
+109 |                     <i class="bi bi-people me-2"></i>
+110 |                     Users
+111 |                 </a>
+112 |             </li>
+113 |
+114 |             <li class="nav-item">
+115 |                 <a class="nav-link <?php echo $current_page === 'settings.php' ? 'active' : ''; ?>" href="settings.php">
+116 |                     <i class="bi bi-gear me-2"></i>
+117 |                     Settings
+118 |                 </a>
+119 |             </li>
+120 |             <?php endif; ?>
+121 |         </ul>
+122 |
+123 |         <!-- Logout button at bottom -->
+124 |         <div class="px-3 mt-4">
+125 |             <a href="simple_logout.php" class="btn btn-outline-light w-100">
+126 |                 <i class="bi bi-box-arrow-right me-2"></i>
+127 |                 Logout
+128 |             </a>
+129 |         </div>
+130 |     </div>
+131 | </nav>
