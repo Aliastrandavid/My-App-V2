@@ -4,8 +4,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $username = $_SESSION['username'] ?? 'User';
 $user_role = $_SESSION['role'] ?? '';
 ?>
- 8 | <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse position-fixed" style="height:100vh;">
- 9 |     <div class="position-sticky pt-3">
+<nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse position-fixed" style="height:100vh;">
+    <div class="position-sticky pt-3">
 10 |         <!-- Site logo and title -->
 11 |         <div class="px-3 py-3 mb-3 text-white">
 12 |             <a href="../" class="text-decoration-none text-reset"><h4>Flat CMS</h4></a>
